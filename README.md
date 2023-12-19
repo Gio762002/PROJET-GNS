@@ -14,6 +14,6 @@ There's several python files that achieve the conversion form an intent file to 
 
 **generate commands**: ```commands.py```: contains all the commands that need to be sorted by order.  
 
-**principal programme** : ```main.py``` : use all objets(defined by classes), clear out the order of commands.  
+**principal programme** : ```main.py``` : use all objects(defined by classes), clear out the order of commands.  
 
 **the point that might be the most difficult: sort the order of commands**   

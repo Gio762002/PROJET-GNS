@@ -12,7 +12,7 @@ There's several python files that achieve the conversion form an intent file to 
 
 **topologie overview** : ```class.py``` : define classes for router/as/protocol.  
 
-                         ```configure.py```: define all the fct that are usefull to build the topologie ex: add one router to an as.  
+```configure.py```: define all the fct that are usefull to build the topologie ex: add one router to an as.  
 
 **generate commands**: ```commands.py```: contains all the commands that need to be sorted by order.  
 

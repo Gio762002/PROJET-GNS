@@ -10,9 +10,7 @@ There's several python files that achieve the conversion form an intent file to 
 
 **read intent** : ```read.py``` read from a json file(maybe).  
 
-**topologie overview** : ```class.py``` : define classes for router/as/protocol.  
-
-```configure.py```: define all the fct that are usefull to build the topologie ex: add one router to an as.  
+**topologie overview** : ```class.py``` : define classes for router/as/protocol.  ```configure.py```: define all the fct that are usefull to build the topologie ex: add one router to an as.  
 
 **generate commands**: ```commands.py```: contains all the commands that need to be sorted by order.  
 

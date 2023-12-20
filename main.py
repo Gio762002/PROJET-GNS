@@ -2,8 +2,8 @@ import class_reseau as classr
 import fct_reseau as fctr
 
 
-as1 = classr.anonymous_system(1,"OSPF")
-as2 = classr.anonymous_system(2,"RIP")
+as1 = classr.autonomous_system(1,"OSPF")
+as2 = classr.autonomous_system(2,"RIP")
     
 print("AS1 id: ",as1.as_id)
 print("AS1 igp: ",as1.igp)

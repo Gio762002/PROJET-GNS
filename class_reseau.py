@@ -18,7 +18,7 @@ class interface:
         self.connected_router = None
         self.connected_interface = None    
 
-class anonymous_system:
+class autonomous_system:
 
     def __init__(self, as_id, igp):
         self.as_id = as_id

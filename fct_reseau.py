@@ -55,13 +55,10 @@ def add_router_to_graph(router,AS):
     AS.graph[router.router_id] = router.neighbours
 
 
-def as_auto_addressing(AS,ip_range):
+def as_auto_addressing(AS,ip_range,numero_link): # ip_range = "2001:100::0"
     for router_id,router in AS.routers.items():
         number = 0
         for interface in router.interfaces.values():
-            
             number += 1
             if interface.address_ipv6_global == None:
-                interface.address_ipv6_global = ip_range + str(router_id) + ":" + str(number)
-
-                
+                interface.address_ipv6_global = ip_range + str(AS.number) + ":" + str(numero_link) + ":" + str(number)         

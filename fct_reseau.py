@@ -4,17 +4,17 @@ def init_interface(router,interface):
     router.all_interfaces[interface.name] = 0 # .name is the key
     router.interfaces[interface.name] = interface
 
-def set_interface(router1, interface1,router2,interface2):
-    router1.all_interfaces[interface1.name] = 1 #same as below but more clear
-    router1.interfaces[interface1.name].statu = "up" # need to be associated by corresponding Cisco command
-    router1.interfaces[interface1.name].connected_router = router2.router_id
-    router1.interfaces[interface1.name].connected_interface = interface2.name
+def set_interface(router1, interface1,router2,interface2):#interface as a string
+    router1.all_interfaces[interface1] = 1 #same as below but more clear
+    router1.interfaces[interface1].statu = "up" # need to be associated by corresponding Cisco command
+    router1.interfaces[interface1].connected_router = router2.router_id
+    router1.interfaces[interface1].connected_interface = interface2
     router1.neighbours.append(router2.router_id)
 
-    router2.all_interfaces[interface2.name] = 1
-    router2.interfaces[interface2.name].statu = "up" # need to be associated by corresponding Cisco command
-    router2.interfaces[interface2.name].connected_router = router1.router_id
-    router2.interfaces[interface2.name].connected_interface = interface1.name
+    router2.all_interfaces[interface2] = 1
+    router2.interfaces[interface2].statu = "up" # need to be associated by corresponding Cisco command
+    router2.interfaces[interface2].connected_router = router1.router_id
+    router2.interfaces[interface2].connected_interface = interface1
     router2.neighbours.append(router1.router_id)
 
 
@@ -28,15 +28,15 @@ def find_available_interface(all_interfaces):
         print(e)
 
 '''need find_available_interface, set_interface'''
-def local_link(router1,router2,address1,address2):
+def local_link(router1,router2):
     # for each router, find a free interface  
     interface1 = find_available_interface(router1.all_interfaces) # interface as a string
     interface2 = find_available_interface(router2.all_interfaces)
     # connect the two interfaces
     set_interface(router1,interface1,router2,interface2)
-    #distribute ipv6 address
-    router1.interfaces[interface1].address_ipv6_global = address1 # automatic distribution realised in main.py
-    router2.interfaces[interface2].address_ipv6_global = address2
+    # #distribute ipv6 addresses
+    # router1.interfaces[interface1].address_ipv6_global = address1 # automatic distribution realised in main.py
+    # router2.interfaces[interface2].address_ipv6_global = address2
 
 def reset_interface(router,interface): # only one side
     router.all_interfaces[interface] = 0
@@ -70,20 +70,25 @@ def add_router_to_as(router,AS): #router,AS are objects
 
 '''three fcts concerning address distribution'''
 #distribution of ipv6 addresses for 2 interfaces connected to each other
-def as_auto_addressing(AS,ip_range,interface1,interface2): # ip_range = "2001:100::0", AS as an object, interface as a string
-    for numero_link in range(len(AS.link_lst)):
+def as_auto_addressing(AS,ip_range,interface1,interface2,numero_link): # ip_range = "2001:100::0", AS as an object, interface as a string
         if interface1 == AS.link_lst[numero_link][0][1] and interface2 == AS.link_lst[numero_link][1][1]:
-            address1 = ip_range + str(AS.number) + ":" + str(numero_link) + "::1"
-            address2 = ip_range + str(AS.number) + ":" + str(numero_link) + "::2"
-            if AS.link_lst[numero_link][0][0] > AS.link_lst[numero_link][1][0]:
-                return (address2,address1)
-            else:
-                return (address1,address2)# router having bigger id has bigger address
+            address1 = ip_range + str(AS.as_id) + ":" + str(numero_link) + "::1"
+            address2 = ip_range + str(AS.as_id) + ":" + str(numero_link) + "::2"
+            # if AS.link_lst[numero_link][0][0] > AS.link_lst[numero_link][1][0]:
+            #     return (address2,address1)
+            # else:
+            return (address1,address2)# router having bigger id has bigger address
         
 
 def as_auto_loopback(AS,ip_range): # AS as an object
     for router_id,router in AS.routers.items():
-        router.loopback = ip_range + str(AS.number) + ":" + str(router_id) + "::1"
+        router.loopback = ip_range + str(AS.as_id) + ":" + (str(router_id).split('.'))[0] + "::1/128"
+        loopback_interface = find_available_interface(router.all_interfaces)
+        router.loopback_interface = loopback_interface # interface as a string
+        router.all_interfaces[loopback_interface] = 1
+        router.interfaces[loopback_interface].statu = "up"
+        router.interfaces[loopback_interface].address_ipv6_global = router.loopback
+        router.interfaces[loopback_interface].tag = 1 
 
 def as_loopback_plan(AS): #AS as an object
     for router_id,router in AS.routers.items():

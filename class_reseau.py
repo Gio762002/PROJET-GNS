@@ -1,6 +1,7 @@
 class router:
    
-    def __init__(self,type):
+    def __init__(self,name,type="Internal"):
+        self.name = name
         self.router_id = None
         self.loopback = None
         self.all_interfaces = {} #interface.name : occupied? (1 or 0)
@@ -26,6 +27,13 @@ class autonomous_system:
     def __init__(self, as_id, igp):
         self.as_id = as_id
         self.routers = {} # router_id : router(object)
+        self.link_lst = [] # (router_id,interface.name,router_id,interface.name)
         self.loopback_plan = {} # router_id : loopback
         self.igp = igp # OSPF or RIP
         self.bgp = "BGP"
+
+    def construct_link_lst(self):
+        for router_id,router in self.routers.items():
+            for interface in router.interfaces.values():
+                if interface.connected_router != None:
+                    self.link_lst.append((router_id,interface.name,interface.connected_router,interface.connected_interface))

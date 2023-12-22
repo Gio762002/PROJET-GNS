@@ -22,7 +22,7 @@ def find_available_interface(all_interfaces):
     try:
         for interface, status in all_interfaces.items():
             if status == 0:
-                return interface
+                return interface # return the name of the interface
         raise Exception("No available interface found.")
     except Exception as e:
         print(e)
@@ -30,7 +30,7 @@ def find_available_interface(all_interfaces):
 '''need find_available_interface, set_interface'''
 def local_link(router1,router2,address1,address2):
     # for each router, find a free interface  
-    interface1 = find_available_interface(router1.all_interfaces)
+    interface1 = find_available_interface(router1.all_interfaces) # interface as a string
     interface2 = find_available_interface(router2.all_interfaces)
     # connect the two interfaces
     set_interface(router1,interface1,router2,interface2)
@@ -53,7 +53,7 @@ def delete_link(router1,router2): # = reset_interface for both sides
         if interface.connected_router == router1.router_id:
             reset_interface(router2,interface.name)
 
-def reinit_router(router,loopback,type):
+def reinit_router(router,loopback,type): #router as an object
     router.loopback = loopback
     router.type = type
 
@@ -64,23 +64,48 @@ def reinit_router(router,loopback,type):
 #    AS.as_id = id
 #    AS.igp = igp
  
-def add_router_to_as(router,AS):
+def add_router_to_as(router,AS): #router,AS are objects
     AS.routers[router.router_id] = router
 
 
-def as_auto_addressing(AS,ip_range,numero_link): # ip_range = "2001:100::0"
+'''three fcts concerning address distribution'''
+#distribution of ipv6 addresses for 2 interfaces connected to each other
+def as_auto_addressing(AS,ip_range,interface1,interface2): # ip_range = "2001:100::0", AS as an object, interface as a string
+    for numero_link in range(len(AS.link_lst)):
+        if interface1 == AS.link_lst[numero_link][0][1] and interface2 == AS.link_lst[numero_link][1][1]:
+            address1 = ip_range + str(AS.number) + ":" + str(numero_link) + "::1"
+            address2 = ip_range + str(AS.number) + ":" + str(numero_link) + "::2"
+            if AS.link_lst[numero_link][0][0] > AS.link_lst[numero_link][1][0]:
+                return (address2,address1)
+            else:
+                return (address1,address2)# router having bigger id has bigger address
+        
+
+def as_auto_loopback(AS,ip_range): # AS as an object
     for router_id,router in AS.routers.items():
-        number = 0
-        for interface in router.interfaces.values():
-            number += 1
-            if interface.address_ipv6_global == None:
-                interface.address_ipv6_global = ip_range + str(AS.number) + ":" + str(numero_link) + ":" + str(number)         
+        router.loopback = ip_range + str(AS.number) + ":" + str(router_id) + "::1"
 
-#def auto_loopback(AS,ip_range)
-
-'''need fct to for loopback_plan'''
-#def as_loopback_plan(AS):
+def as_loopback_plan(AS): #AS as an object
+    for router_id,router in AS.routers.items():
+        AS.loopback_plan[router_id] = router.loopback
 
 
-
-#def find_neighbour_info(AS): 对于一个ABR，找到其ebgp端口连接的ASBR的信息 输出为一个字典{(as,router,ABR):(as,router,ABR)}
+'''对于一个ABR,找到其ebgp端口连接的ASBR的信息 输出为一个字典{(as,router,ABR_interface):(as,router,ABR_interface)}'''
+def eBGP_neighbour_info(lst_as): 
+    neighbour_info = {}
+    for As in lst_as:
+        for router_id,router in As.routers.items():
+            for interface in router.interfaces.values(), interface.protocol_type == "eBGP":
+                for As2 in lst_as, As2.as_id != As.as_id:
+                    for router_id2,router2 in As2.routers.items():
+                        for interface2 in router2.interfaces.values(), interface2.protocol_type == "eBGP":
+                            if interface2.connected_router == router_id:
+                                neighbour_info[(As.as_id,router_id,interface.name)] = (As2.as_id,router_id2,interface2.name)
+                                #same link will be added twice, but it doesn't matter
+    return neighbour_info
+        
+def find_eBGP_neighbour_info(interface,lst_as): #interface(str) = interface.name
+    neighbour_info = eBGP_neighbour_info(lst_as)
+    for key,value in neighbour_info.items():
+        if key[2]==interface:
+            return value

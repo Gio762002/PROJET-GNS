@@ -43,15 +43,21 @@ def reset_interface(router,interface): # only one side
     router.interfaces[interface].statu = "down"
     router.interfaces[interface].connected_router = None
     router.interfaces[interface].connected_interface = None
+    router.interfaces[interface].address_ipv6_global = None
 
 '''need reset_interface'''
-def delete_link(router1,router2): # = reset_interface for both sides
+def delete_link(router1,router2,as_lst): # = reset_interface for both sides
     for interface in router1.interfaces.values():
         if interface.connected_router == router2.router_id:
             reset_interface(router1,interface.name)
     for interface in router2.interfaces.values():
         if interface.connected_router == router1.router_id:
             reset_interface(router2,interface.name)
+    # uploade the AS link list
+    for As in as_lst:
+        if As.as_id == router1.position or As.as_id == router2.position:
+            As.update_link_lst(router1.router_id,router2.router_id)
+
 
 def reinit_router(router,loopback,type): #router as an object
     router.loopback = loopback
@@ -66,6 +72,7 @@ def reinit_router(router,loopback,type): #router as an object
  
 def add_router_to_as(router,AS): #router,AS are objects
     AS.routers[router.router_id] = router
+    router.position = AS.as_id #router.position is a string
 
 
 '''three fcts concerning address distribution'''

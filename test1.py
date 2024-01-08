@@ -4,9 +4,9 @@ import fct_protocol as fctp
 
 as1 = classr.autonomous_system(1,"OSPF")
 as2 = classr.autonomous_system(2,"RIP")
-as_lst = [as1,as2]
+as_lst = [as1,as2] # as a global container of all objects
 
-#3 router in AS1
+#3 router in AS1                                                                                    
 r1 = classr.router()
 r1.router_id = "1.1.1.1"
 r2 = classr.router("ABR")
@@ -99,13 +99,13 @@ for ((rt1,int1),(rt2,int2)) in as1.link_lst: #all input are strings
     elif rt2 in as2.loopback_plan.keys():
         as2.routers[rt2].interfaces[int2].address_ipv6_global = address2
 
-for r in as1.routers.values():
-    for interface in r.interfaces.keys(): #interface as a string
-        print(r.router_id,":",interface,':',r.interfaces[interface].address_ipv6_global)
-    print(" ")
-print(r4.router_id,": eth1:",r4.interfaces['eth1'].address_ipv6_global)
-print(r5.router_id,": eth1:",r5.interfaces['eth1'].address_ipv6_global)#as2运行会覆盖
-print("")
+# for r in as1.routers.values():
+    # for interface in r.interfaces.keys(): #interface as a string
+        # print(r.router_id,":",interface,':',r.interfaces[interface].address_ipv6_global)
+    # print(" ")
+# print(r4.router_id,": eth1:",r4.interfaces['eth1'].address_ipv6_global)
+# print(r5.router_id,": eth1:",r5.interfaces['eth1'].address_ipv6_global)
+# print("")
 
 numero_link = 0
 for ((rt1,int1),(rt2,int2)) in as2.link_lst: #all input are strings
@@ -117,13 +117,29 @@ for ((rt1,int1),(rt2,int2)) in as2.link_lst: #all input are strings
     rtr = as1.routers.get(rt2) if rt2 in as1.routers.keys() else as2.routers.get(rt2)
     if rtr.interfaces.get(int2).address_ipv6_global is None: #as1 dont have this check, should add
         rtr.interfaces.get(int2).address_ipv6_global = address2
-for rtr in as2.routers.values():
-    for interface in rtr.interfaces.keys(): #interface as a string
-        print(rtr.router_id,":",interface,':',rtr.interfaces[interface].address_ipv6_global)
-    print(" ")
+# for rtr in as2.routers.values():
+#     for interface in rtr.interfaces.keys(): #interface as a string
+#         print(rtr.router_id,":",interface,':',rtr.interfaces[interface].address_ipv6_global)
+#     print(" ")
    
 
 
 
 
 
+# test for modifying config : delete link/ add link
+fctr.delete_link(r1,r2,as_lst)
+for interface in r1.interfaces.values():
+    print(interface.name,":",interface.address_ipv6_global)
+print(" ")
+for interface in r2.interfaces.values():
+    print(interface.name,":",interface.address_ipv6_global)
+print(" ")
+
+for As in as_lst:
+    for rtr in As.routers.values():
+        for interface in rtr.interfaces.values():
+            print(rtr.router_id,":",interface.name,':',interface.address_ipv6_global)
+        print(" ")
+print("AS1 link_lst: ",as1.link_lst)
+print("AS2 link_lst: ",as2.link_lst)

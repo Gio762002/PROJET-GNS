@@ -9,7 +9,8 @@ class router:
         #self.routing_table = {} ##maybe not needed
         self.interfaces = {} #interface.name: interface(object)
         self.neighbours = [] #router_id, extrait de self.interface
-        self.type = type # ABR, ASBR, Internal   
+        self.type = type # ABR, ASBR, Internal 
+        self.position = None # name of the AS where the router is located, to be tracked for any modification 
 
 class interface:
     
@@ -45,3 +46,10 @@ class autonomous_system:
                     if link not in new_link_lst and reverse_link not in new_link_lst:
                         new_link_lst.append(link)
         self.link_lst = new_link_lst
+
+    def update_link_lst(self, r1, r2): #r1, r2 are strings
+        for ((rt1,_),(rt2,_)) in self.link_lst:
+            if rt1 == r1 and rt2 == r2:
+                self.link_lst.remove(((rt1,_),(rt2,_)))
+            elif rt1 == r2 and rt2 == r1:
+                self.link_lst.remove(((rt1,_),(rt2,_)))

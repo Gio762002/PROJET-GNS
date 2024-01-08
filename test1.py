@@ -83,23 +83,47 @@ fctr.local_link(r5,r6)
 as1.construct_link_lst()
 as2.construct_link_lst()
 print("AS1 link_lst: ",as1.link_lst)
-# print("AS2 link_lst: ",as2.link_lst)
+print("AS2 link_lst: ",as2.link_lst)
 
 '''need to convert the code into a function'''
 numero_link = 0
-for ((r1,int1),(r2,int2)) in as1.link_lst: #all input are strings
-    (address1,address2) = fctr.as_auto_addressing(as1,"2001:300::",int1,int2,numero_link)
+for ((rt1,int1),(rt2,int2)) in as1.link_lst: #all input are strings
+    (address1,address2) = fctr.as_auto_addressing_for_link(as1,"2001:300::",int1,int2,numero_link)
     numero_link += 1
-    if r1 in as1.loopback_plan.keys():
-        as1.routers[r1].interfaces[int1].address_ipv6_global = address1
-    elif r1 in as2.loopback_plan.keys():
-        as2.routers[r1].interfaces[int1].address_ipv6_global = address1
-    if r2 in as1.loopback_plan.keys():
-        as1.routers[r2].interfaces[int2].address_ipv6_global = address2
-    elif r2 in as2.loopback_plan.keys():
-        as2.routers[r2].interfaces[int2].address_ipv6_global = address2
-print("r4 interface eth1 address: ",r4.interfaces['eth1'].address_ipv6_global)
+    if rt1 in as1.loopback_plan.keys():
+        as1.routers[rt1].interfaces[int1].address_ipv6_global = address1
+    elif rt1 in as2.loopback_plan.keys():
+        as2.routers[rt1].interfaces[int1].address_ipv6_global = address1
+    if rt2 in as1.loopback_plan.keys():
+        as1.routers[rt2].interfaces[int2].address_ipv6_global = address2
+    elif rt2 in as2.loopback_plan.keys():
+        as2.routers[rt2].interfaces[int2].address_ipv6_global = address2
+
 for r in as1.routers.values():
     for interface in r.interfaces.keys(): #interface as a string
         print(r.router_id,":",interface,':',r.interfaces[interface].address_ipv6_global)
     print(" ")
+print(r4.router_id,": eth1:",r4.interfaces['eth1'].address_ipv6_global)
+print(r5.router_id,": eth1:",r5.interfaces['eth1'].address_ipv6_global)#as2运行会覆盖
+print("")
+
+numero_link = 0
+for ((rt1,int1),(rt2,int2)) in as2.link_lst: #all input are strings
+    (address1,address2) = fctr.as_auto_addressing_for_link(as2,"2001:300::",int1,int2,numero_link)
+    numero_link += 1
+    rtr = as1.routers.get(rt1) if rt1 in as1.routers.keys() else as2.routers.get(rt1)
+    if rtr.interfaces.get(int1).address_ipv6_global is None:
+        rtr.interfaces.get(int1).address_ipv6_global = address1
+    rtr = as1.routers.get(rt2) if rt2 in as1.routers.keys() else as2.routers.get(rt2)
+    if rtr.interfaces.get(int2).address_ipv6_global is None: #as1 dont have this check, should add
+        rtr.interfaces.get(int2).address_ipv6_global = address2
+for rtr in as2.routers.values():
+    for interface in rtr.interfaces.keys(): #interface as a string
+        print(rtr.router_id,":",interface,':',rtr.interfaces[interface].address_ipv6_global)
+    print(" ")
+   
+
+
+
+
+

@@ -70,14 +70,14 @@ def add_router_to_as(router,AS): #router,AS are objects
 
 '''three fcts concerning address distribution'''
 #distribution of ipv6 addresses for 2 interfaces connected to each other
-def as_auto_addressing(AS,ip_range,interface1,interface2,numero_link): # ip_range = "2001:100::0", AS as an object, interface as a string
+def as_auto_addressing_for_link(AS,ip_range,interface1,interface2,numero_link): # ip_range = "2001:100::0", AS as an object, interface as a string
         if interface1 == AS.link_lst[numero_link][0][1] and interface2 == AS.link_lst[numero_link][1][1]:
             address1 = ip_range + str(AS.as_id) + ":" + str(numero_link) + "::1"
             address2 = ip_range + str(AS.as_id) + ":" + str(numero_link) + "::2"
-            # if AS.link_lst[numero_link][0][0] > AS.link_lst[numero_link][1][0]:
-            #     return (address2,address1)
-            # else:
-            return (address1,address2)# router having bigger id has bigger address
+            if AS.link_lst[numero_link][0][0] > AS.link_lst[numero_link][1][0]:
+                return (address2,address1)
+            else:
+                return (address1,address2)# router having bigger id has bigger address
         
 
 def as_auto_loopback(AS,ip_range): # AS as an object

@@ -66,38 +66,26 @@ for router in as1.routers.values():
     fctr.as_loopback_plan(as1)
 for router in as2.routers.values():
     fctr.as_loopback_plan(as2)
-print("AS1 loopback plan: ",as1.loopback_plan)
+# print("AS1 loopback plan: ",as1.loopback_plan)
 
 fctr.local_link(r1,r2,r1eth0,r2eth0)
-print("r1 all_interfaces: ",r1.all_interfaces)
-print("r1 interface eth0 connected to: ",r1.interfaces['eth0'].connected_router)
+# print("r1 all_interfaces: ",r1.all_interfaces)
+# print("r1 interface eth0 connected to: ",r1.interfaces['eth0'].connected_router)
 fctr.local_link(r1,r3,r1eth1,r3eth1)
 fctr.local_link(r2,r4,r2eth1,r4eth1)
-print("r2 all_interfaces: ",r2.all_interfaces)
-print("r2 interface eth1 connected to: ",r2.interfaces['eth1'].connected_router)
+# print("r2 all_interfaces: ",r2.all_interfaces)
+# print("r2 interface eth1 connected to: ",r2.interfaces['eth1'].connected_router)
 fctr.local_link(r3,r5,r3eth0,r5eth0)
 fctr.local_link(r4,r6,r4eth0,r6eth0)
 fctr.local_link(r5,r6,r5eth1,r6eth1)
 
-as1.construct_link_lst()
-as2.construct_link_lst()
-print("AS1 link_lst: ",as1.link_lst)
-print("AS2 link_lst: ",as2.link_lst)
+as1.construct_link_dict()
+as2.construct_link_dict()
+print("AS1 link_dict: ",as1.link_dict)
+# print("AS2 link_dict: ",as2.link_dict)
 
-'''need to convert the code into a function'''
-numero_link = 0
-for ((rt1,int1),(rt2,int2)) in as1.link_lst: #all input are strings
-    (address1,address2) = fctr.as_auto_addressing_for_link(as1,"2001:300::",int1,int2,numero_link)
-    numero_link += 1
-    if rt1 in as1.loopback_plan.keys():
-        as1.routers[rt1].interfaces[int1].address_ipv6_global = address1
-    elif rt1 in as2.loopback_plan.keys():
-        as2.routers[rt1].interfaces[int1].address_ipv6_global = address1
-    if rt2 in as1.loopback_plan.keys():
-        as1.routers[rt2].interfaces[int2].address_ipv6_global = address2
-    elif rt2 in as2.loopback_plan.keys():
-        as2.routers[rt2].interfaces[int2].address_ipv6_global = address2
 
+fctr.as_auto_addressing_for_link(as1,"2001:300::",as_lst)#ok
 for r in as1.routers.values():
     for interface in r.interfaces.keys(): #interface as a string
         print(r.router_id,":",interface,':',r.interfaces[interface].address_ipv6_global)
@@ -106,39 +94,30 @@ print(r4.router_id,": eth1:",r4.interfaces['eth1'].address_ipv6_global)
 print(r5.router_id,": eth1:",r5.interfaces['eth1'].address_ipv6_global)
 print("")
 
-numero_link = 0
-for ((rt1,int1),(rt2,int2)) in as2.link_lst: #all input are strings
-    (address1,address2) = fctr.as_auto_addressing_for_link(as2,"2001:300::",int1,int2,numero_link)
-    numero_link += 1
-    rtr = as1.routers.get(rt1) if rt1 in as1.routers.keys() else as2.routers.get(rt1)
-    if rtr.interfaces.get(int1).address_ipv6_global is None:
-        rtr.interfaces.get(int1).address_ipv6_global = address1
-    rtr = as1.routers.get(rt2) if rt2 in as1.routers.keys() else as2.routers.get(rt2)
-    if rtr.interfaces.get(int2).address_ipv6_global is None: #as1 dont have this check, should add
-        rtr.interfaces.get(int2).address_ipv6_global = address2
-for rtr in as2.routers.values():
-    for interface in rtr.interfaces.keys(): #interface as a string
-        print(rtr.router_id,":",interface,':',rtr.interfaces[interface].address_ipv6_global)
+fctr.as_auto_addressing_for_link(as2,"2001:300::",as_lst)#ok
+for router in as2.routers.values():
+    for interface in router.interfaces.keys(): #interface as a string
+        print(router.router_id,":",interface,':',router.interfaces[interface].address_ipv6_global)
     print(" ")
    
 
 
+# # test for modifying config : delete link/ add link
+# fctr.delete_link(r1,r2,as_lst) ##ok
+# for interface in r1.interfaces.values():
+#     print(interface.name,":",interface.address_ipv6_global)
+# print(" ")
+# for interface in r2.interfaces.values():
+#     print(interface.name,":",interface.address_ipv6_global)
+# print(" ")
 
-
-
-# test for modifying config : delete link/ add link
-fctr.delete_link(r1,r2,as_lst)
-for interface in r1.interfaces.values():
-    print(interface.name,":",interface.address_ipv6_global)
-print(" ")
-for interface in r2.interfaces.values():
-    print(interface.name,":",interface.address_ipv6_global)
-print(" ")
-
-for As in as_lst:
-    for rtr in As.routers.values():
-        for interface in rtr.interfaces.values():
-            print(rtr.router_id,":",interface.name,':',interface.address_ipv6_global)
-        print(" ")
-print("AS1 link_lst: ",as1.link_lst)
-print("AS2 link_lst: ",as2.link_lst)
+# for As in as_lst:
+#     for router in As.routers.values():
+#         for interface in router.interfaces.values():
+#             print(router.router_id,":",interface.name,':',interface.address_ipv6_global)
+#         print(" ")
+# print("AS1 link_dict: ",as1.link_dict)
+# print("AS2 link_dict: ",as2.link_dict)
+    
+print('eBGP neighbour info:')
+print(fctr.eBGP_neighbour_info(as_lst))

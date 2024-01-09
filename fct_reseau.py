@@ -38,7 +38,7 @@ def delete_link(router1,router2,as_lst): # = reset_interface for both sides
     # uploade the AS link list
     for As in as_lst:
         if As.as_id == router1.position or As.as_id == router2.position:
-            As.update_link_lst(router1.router_id,router2.router_id)
+            As.update_link_dict(router1.router_id,router2.router_id)
 
 
 def reinit_router(router,loopback,type): #router as an object
@@ -58,16 +58,32 @@ def add_router_to_as(router,AS): #router,AS are objects
 
 
 '''three fcts concerning address distribution'''
-#distribution of ipv6 addresses for 2 interfaces connected to each other
-def as_auto_addressing_for_link(AS,ip_range,int1,int2,numero_link): # ip_range = "2001:100::0", AS as an object, interface as a string
-        if int1 == AS.link_lst[numero_link][0][1] and int2 == AS.link_lst[numero_link][1][1]:
-            address1 = ip_range + str(AS.as_id) + ":" + str(numero_link) + "::1"
-            address2 = ip_range + str(AS.as_id) + ":" + str(numero_link) + "::2"
-            if AS.link_lst[numero_link][0][0] > AS.link_lst[numero_link][1][0]:
-                return (address2,address1)
-            else:
-                return (address1,address2)# router having bigger id has bigger address
-        
+#distribution of ipv6 addresses for an as
+def get_router_object(router_id,as_lst):
+    for As in as_lst:
+        if router_id in As.routers.keys():
+            return As.routers.get(router_id)
+    raise Exception("router_id not found")
+
+def as_auto_addressing_for_link(As,ip_range,as_lst): # ip_range = "2001:100::0", AS as an object, As_lst as a list of AS objects
+        link_dict_copy = As.link_dict.copy()
+        numero_link = 0
+        for ((r1,i1),(r2,i2)) in As.link_dict.items(): #all are strings   
+            del link_dict_copy[(r2,i2)]
+            if (r1,i1) in link_dict_copy.keys():
+                numero_link += 1
+                s_address = ip_range + str(As.as_id) + ":" + str(numero_link) + "::1"
+                b_address = ip_range + str(As.as_id) + ":" + str(numero_link) + "::2"
+                if r1 > r2:
+                    addresses = (b_address,s_address)          
+                else:
+                    addresses = (s_address,b_address)# router having bigger id has bigger address
+            router1 = get_router_object(r1,as_lst)
+            router2 = get_router_object(r2,as_lst)
+            if router1.interfaces.get(i1).address_ipv6_global is None:
+                router1.interfaces.get(i1).address_ipv6_global = addresses[0]
+            if router2.interfaces.get(i2).address_ipv6_global is None:
+                router2.interfaces.get(i2).address_ipv6_global = addresses[1]
 
 def as_auto_loopback(AS,ip_range): # AS as an object
     for router_id,router in AS.routers.items():
@@ -84,12 +100,13 @@ def eBGP_neighbour_info(lst_as):
     neighbour_info = {}
     for As in lst_as:
         for router_id,router in As.routers.items():
-            for interface in router.interfaces.values(), interface.protocol_type == "eBGP":
-                for As2 in lst_as, As2.as_id != As.as_id:
-                    for router_id2,router2 in As2.routers.items():
-                        for interface2 in router2.interfaces.values(), interface2.protocol_type == "eBGP":
-                            if interface2.connected_router == router_id:
-                                neighbour_info[(As.as_id,router_id,interface.name)] = (As2.as_id,router_id2,interface2.name)
+            for interface in router.interfaces.values():
+                if interface.protocol_type == "eBGP":
+                    for As2 in lst_as, As2.as_id != As.as_id:
+                        for router_id2,router2 in As2.routers.items():
+                            for interface2 in router2.interfaces.values(), interface2.protocol_type == "eBGP":
+                                if interface2.connected_router == router_id:
+                                    neighbour_info[(As.as_id,router_id,interface.name)] = (As2.as_id,router_id2,interface2.name)
                                 #same link will be added twice, but it doesn't matter
     return neighbour_info
 '''对于一个ABR,找到其ebgp端口连接的ASBR的信息 输出为一个字典{(as,router,ABR_interface):(as,router,ABR_interface)}'''     

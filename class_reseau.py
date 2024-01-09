@@ -28,26 +28,25 @@ class autonomous_system:
     def __init__(self, as_id, igp):
         self.as_id = as_id
         self.routers = {} # router_id : router(object)
-        self.link_lst = [] # ((router_id,interface.name),(router_id,interface.name))
+        self.link_dict = {} #(router_id,interface.name):(router_id,interface.name)
         self.loopback_plan = {} # router_id : loopback
         self.igp = igp # OSPF or RIP
         self.bgp = "BGP"
 
-    def construct_link_lst(self):
-        new_link_lst = []
+
+    def construct_link_dict(self):
+        link_dict = {}
         for router_id, router in self.routers.items():
             for interface in router.interfaces.values():
                 if interface.connected_router is not None:
-                    link = ((router_id, interface.name), (interface.connected_router, interface.connected_interface))
-                    #eliminate duplicates
-                    reverse_link = (link[1], link[0])
-                    if link not in new_link_lst and reverse_link not in new_link_lst:
-                        new_link_lst.append(link)
-        self.link_lst = new_link_lst
+                    link_dict[(router_id, interface.name)]=(interface.connected_router, interface.connected_interface)
+                    #(router_id, interface.name): (interface.connected_router, interface.connected_interface) and its reverse
+                    link_dict[(interface.connected_router, interface.connected_interface)]=(router_id, interface.name)
+        self.link_dict = link_dict
 
-    def update_link_lst(self, r1, r2): #r1, r2 are strings
-        for ((rt1,_),(rt2,_)) in self.link_lst:
+    def update_link_dict(self, r1, r2): #r1, r2 are strings
+        link_dict_copy = self.link_dict.copy()
+        for (rt1,int1),(rt2,int2) in link_dict_copy.items():
             if rt1 == r1 and rt2 == r2:
-                self.link_lst.remove(((rt1,_),(rt2,_)))
-            elif rt1 == r2 and rt2 == r1:
-                self.link_lst.remove(((rt1,_),(rt2,_)))
+                del self.link_dict[(rt1,int1)]
+                del self.link_dict[(rt2,int2)]

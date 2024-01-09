@@ -2,10 +2,13 @@ import class_reseau as classr
 import fct_reseau as fctr
 import fct_protocol as fctp
 
+
+'''need write Cisco command to output (commands associated)'''
 def config_unused_interface(router):
-    for interface, status in router.all_interfaces.items():
+    for int_name, status in router.all_interfaces.items():
         if status == 0:
-            pass #need write Cisco command to output
+            interface = router.interfaces[int_name].name
+            pass 
             #print("interface " + interface)
             #print("no ipv6 address")
             #print("shutdown")

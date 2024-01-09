@@ -66,19 +66,18 @@ for router in as1.routers.values():
     fctr.as_loopback_plan(as1)
 for router in as2.routers.values():
     fctr.as_loopback_plan(as2)
-# print("AS1 loopback plan: ",as2.loopback_plan) checked
-# print(r1.interfaces[r1.loopback_interface].tag)
+print("AS1 loopback plan: ",as1.loopback_plan)
 
-fctr.local_link(r1,r2)
-# print("r1 all_interfaces: ",r1.all_interfaces)
-# print("r1 interface eth1 connected to: ",r1.interfaces['eth1'].connected_router)
-fctr.local_link(r1,r3)
-fctr.local_link(r2,r4)
-# print("r2 all_interfaces: ",r2.all_interfaces)
-# print("r2 interface eth1 connected to: ",r2.interfaces['eth2'].connected_router)
-fctr.local_link(r3,r5)
-fctr.local_link(r4,r6)
-fctr.local_link(r5,r6)
+fctr.local_link(r1,r2,r1eth0,r2eth0)
+print("r1 all_interfaces: ",r1.all_interfaces)
+print("r1 interface eth0 connected to: ",r1.interfaces['eth0'].connected_router)
+fctr.local_link(r1,r3,r1eth1,r3eth1)
+fctr.local_link(r2,r4,r2eth1,r4eth1)
+print("r2 all_interfaces: ",r2.all_interfaces)
+print("r2 interface eth1 connected to: ",r2.interfaces['eth1'].connected_router)
+fctr.local_link(r3,r5,r3eth0,r5eth0)
+fctr.local_link(r4,r6,r4eth0,r6eth0)
+fctr.local_link(r5,r6,r5eth1,r6eth1)
 
 as1.construct_link_lst()
 as2.construct_link_lst()
@@ -99,13 +98,13 @@ for ((rt1,int1),(rt2,int2)) in as1.link_lst: #all input are strings
     elif rt2 in as2.loopback_plan.keys():
         as2.routers[rt2].interfaces[int2].address_ipv6_global = address2
 
-# for r in as1.routers.values():
-    # for interface in r.interfaces.keys(): #interface as a string
-        # print(r.router_id,":",interface,':',r.interfaces[interface].address_ipv6_global)
-    # print(" ")
-# print(r4.router_id,": eth1:",r4.interfaces['eth1'].address_ipv6_global)
-# print(r5.router_id,": eth1:",r5.interfaces['eth1'].address_ipv6_global)
-# print("")
+for r in as1.routers.values():
+    for interface in r.interfaces.keys(): #interface as a string
+        print(r.router_id,":",interface,':',r.interfaces[interface].address_ipv6_global)
+    print(" ")
+print(r4.router_id,": eth1:",r4.interfaces['eth1'].address_ipv6_global)
+print(r5.router_id,": eth1:",r5.interfaces['eth1'].address_ipv6_global)
+print("")
 
 numero_link = 0
 for ((rt1,int1),(rt2,int2)) in as2.link_lst: #all input are strings
@@ -117,10 +116,10 @@ for ((rt1,int1),(rt2,int2)) in as2.link_lst: #all input are strings
     rtr = as1.routers.get(rt2) if rt2 in as1.routers.keys() else as2.routers.get(rt2)
     if rtr.interfaces.get(int2).address_ipv6_global is None: #as1 dont have this check, should add
         rtr.interfaces.get(int2).address_ipv6_global = address2
-# for rtr in as2.routers.values():
-#     for interface in rtr.interfaces.keys(): #interface as a string
-#         print(rtr.router_id,":",interface,':',rtr.interfaces[interface].address_ipv6_global)
-#     print(" ")
+for rtr in as2.routers.values():
+    for interface in rtr.interfaces.keys(): #interface as a string
+        print(rtr.router_id,":",interface,':',rtr.interfaces[interface].address_ipv6_global)
+    print(" ")
    
 
 

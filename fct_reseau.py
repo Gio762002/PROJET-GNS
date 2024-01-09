@@ -102,7 +102,7 @@ def as_loopback_plan(AS): #AS as an object
         AS.loopback_plan[router_id] = router.loopback
 
 
-'''对于一个ABR,找到其ebgp端口连接的ASBR的信息 输出为一个字典{(as,router,ABR_interface):(as,router,ABR_interface)}'''
+'''对所有AS中的所有ABR,找到其ebgp端口连接的ASBR的信息 输出为一个字典{(as,router,ABR_interface):(as,router,ABR_interface)}'''
 def eBGP_neighbour_info(lst_as): 
     neighbour_info = {}
     for As in lst_as:
@@ -115,7 +115,7 @@ def eBGP_neighbour_info(lst_as):
                                 neighbour_info[(As.as_id,router_id,interface.name)] = (As2.as_id,router_id2,interface2.name)
                                 #same link will be added twice, but it doesn't matter
     return neighbour_info
-        
+'''对于一个ABR,找到其ebgp端口连接的ASBR的信息 输出为一个字典{(as,router,ABR_interface):(as,router,ABR_interface)}'''     
 def find_eBGP_neighbour_info(interface,lst_as): #interface(str) = interface.name
     neighbour_info = eBGP_neighbour_info(lst_as)
     for key,value in neighbour_info.items():

@@ -54,7 +54,6 @@ r6eth2 = classr.interface("eth2")
 for interface in [r6eth0,r6eth1,r6eth2]:
     fctr.init_interface(r6,interface)
 
-
 for router in [r1,r2,r3]:
     fctr.add_router_to_as(router,as1)
 for router in [r4,r5,r6]:
@@ -81,25 +80,24 @@ fctr.local_link(r5,r6,r5eth1,r6eth1)
 
 as1.construct_link_dict()
 as2.construct_link_dict()
-print("AS1 link_dict: ",as1.link_dict)
+# print("AS1 link_dict: ",as1.link_dict)
 # print("AS2 link_dict: ",as2.link_dict)
 
 
 fctr.as_auto_addressing_for_link(as1,"2001:300::",as_lst)#ok
-for r in as1.routers.values():
-    for interface in r.interfaces.keys(): #interface as a string
-        print(r.router_id,":",interface,':',r.interfaces[interface].address_ipv6_global)
-    print(" ")
-print(r4.router_id,": eth1:",r4.interfaces['eth1'].address_ipv6_global)
-print(r5.router_id,": eth1:",r5.interfaces['eth1'].address_ipv6_global)
-print("")
+# for r in as1.routers.values():
+#     for interface in r.interfaces.keys(): #interface as a string
+#         print(r.router_id,":",interface,':',r.interfaces[interface].address_ipv6_global)
+#     print(" ")
+# print(r4.router_id,": eth1:",r4.interfaces['eth1'].address_ipv6_global)
+# print(r5.router_id,": eth1:",r5.interfaces['eth1'].address_ipv6_global)
+# print("")
 
 fctr.as_auto_addressing_for_link(as2,"2001:300::",as_lst)#ok
-for router in as2.routers.values():
-    for interface in router.interfaces.keys(): #interface as a string
-        print(router.router_id,":",interface,':',router.interfaces[interface].address_ipv6_global)
-    print(" ")
-   
+# for router in as2.routers.values():
+#     for interface in router.interfaces.keys(): #interface as a string
+#         print(router.router_id,":",interface,':',router.interfaces[interface].address_ipv6_global)
+#     print(" ")
 
 
 # # test for modifying config : delete link/ add link
@@ -119,5 +117,14 @@ for router in as2.routers.values():
 # print("AS1 link_dict: ",as1.link_dict)
 # print("AS2 link_dict: ",as2.link_dict)
     
-print('eBGP neighbour info:')
-print(fctr.eBGP_neighbour_info(as_lst))
+# fctp.as_enable_rip(as1) ##ok
+# fctp.as_enable_rip(as2)
+# for router in as1.routers.values():
+#     for interface in router.interfaces.values():
+#         print(router.router_id,":",interface.name,':',interface.protocol_type, ",process:",interface.protocol_process)
+#     print("")
+
+# for router in as2.routers.values():
+#     for interface in router.interfaces.values():
+#         print(router.router_id,":",interface.name,':',interface.protocol_type, ",process:",interface.protocol_process)
+#     print("")

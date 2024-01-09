@@ -5,11 +5,17 @@ import fct_reseau as fctr
 """
 Implement the protocol RIP
 """
-def set_rip(router, process_id): #Cisco: ipv6 rip process_id enable
-    for interface in router.interfaces.values():
-        if interface.statu == "up":
-            interface.protocol_type = "RIP"
-            interface.protocol_process = process_id
+def as_enable_rip(As): 
+    process_counter = {} # {rt:process counter}
+    for ((rt1,int1),(rt2,_)) in As.link_dict.items():
+        process_counter[rt1] = 0 if rt1 not in process_counter.keys() else process_counter[rt1]
+        if rt1 in As.routers.keys() and rt2 in As.routers.keys(): #except ABR,ASBR
+            router = As.routers.get(rt1)
+            interface = router.interfaces.get(int1)
+            if interface.protocol_type == None:
+                process_counter[rt1] += 1
+                interface.protocol_type = "RIP"
+                interface.protocol_process = process_counter[rt1] #Cisco: ipv6 rip process_id enable (except ABR,ASBR)
 
 
 """

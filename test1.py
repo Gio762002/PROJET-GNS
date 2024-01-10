@@ -4,7 +4,7 @@ import fct_protocol as fctp
 
 as1 = classr.autonomous_system(1,"OSPF")
 as2 = classr.autonomous_system(2,"RIP")
-as_lst = [as1,as2] # as a global container of all objects
+as_dict = {as1.as_id:as1,as2.as_id:as2} # as a global container of all objects
 
 #3 router in AS1                                                                                    
 r1 = classr.router()
@@ -19,7 +19,7 @@ r4.router_id = "4.4.4.4"
 r5 = classr.router("ABR")
 r5.router_id = "5.5.5.5"
 r6 = classr.router("Internal")
-r6.router_id = "6.6.6.6"
+r6.router_id = "6.6.6.6" 
 
 
 #init interfaces
@@ -85,7 +85,7 @@ as2.construct_link_dict()
 # print("AS2 link_dict: ",as2.link_dict)
 
 
-fctr.as_auto_addressing_for_link(as1,"2001:300::",as_lst)#ok
+fctr.as_auto_addressing_for_link(as1,"2001:300::",as_dict)#ok
 # for r in as1.routers.values():
 #     for interface in r.interfaces.keys(): #interface as a string
 #         print(r.router_id,":",interface,':',r.interfaces[interface].address_ipv6_global)
@@ -94,7 +94,7 @@ fctr.as_auto_addressing_for_link(as1,"2001:300::",as_lst)#ok
 # print(r5.router_id,": eth1:",r5.interfaces['eth1'].address_ipv6_global)
 # print("")
 
-fctr.as_auto_addressing_for_link(as2,"2001:300::",as_lst)#ok
+fctr.as_auto_addressing_for_link(as2,"2001:300::",as_dict)#ok
 # for router in as2.routers.values():
 #     for interface in router.interfaces.keys(): #interface as a string
 #         print(router.router_id,":",interface,':',router.interfaces[interface].address_ipv6_global)
@@ -102,7 +102,7 @@ fctr.as_auto_addressing_for_link(as2,"2001:300::",as_lst)#ok
 
 
 # # test for modifying config : delete link/ add link
-# fctr.delete_link(r1,r2,as_lst) ##ok
+# fctr.delete_link(r1,r2,as_dict) ##ok
 # for interface in r1.interfaces.values():
 #     print(interface.name,":",interface.address_ipv6_global)
 # print(" ")
@@ -110,7 +110,7 @@ fctr.as_auto_addressing_for_link(as2,"2001:300::",as_lst)#ok
 #     print(interface.name,":",interface.address_ipv6_global)
 # print(" ")
 
-# for As in as_lst:
+# for As in as_dict.values():
 #     for router in As.routers.values():
 #         for interface in router.interfaces.values():
 #             print(router.router_id,":",interface.name,':',interface.address_ipv6_global)
@@ -119,9 +119,9 @@ fctr.as_auto_addressing_for_link(as2,"2001:300::",as_lst)#ok
 # print("AS2 link_dict: ",as2.link_dict)
     
 fctp.as_enable_rip(as1) ##ok
-# fctp.as_enable_rip(as2)
+fctp.as_enable_rip(as2)
 
-neighbour_info = fctp.generate_eBGP_neighbour_info(as_lst) #ok
+neighbour_info = fctp.generate_eBGP_neighbour_info(as_dict) #ok
 print("@neighbour_info: ",neighbour_info)
 
 # for router in as1.routers.values():
@@ -136,4 +136,4 @@ print("@neighbour_info: ",neighbour_info)
 
 # print(fctp.find_eBGP_neighbour_info('4.4.4.4','eth1',neighbour_info)) #ok
 
-fctp.as_enable_BGP(as_lst,as1.loopback_plan)
+fctp.as_enable_BGP(as_dict,as1.loopback_plan)

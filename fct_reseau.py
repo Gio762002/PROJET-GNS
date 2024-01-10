@@ -1,7 +1,7 @@
 import class_reseau as cr
 '''
 Clarification : all full names (router/interface) refer to objects, and all abbrev refer to strings 
-certains fcts have parameter : lst_as, which is a list of all AS objects that will be used in the main program
+certains fcts have parameter : dict_as, which is a dict of all AS objects that will be used in the main program
 '''
 
 def init_interface(router,interface):
@@ -29,7 +29,7 @@ def reset_interface(router,int): # only one side
     router.interfaces[int].address_ipv6_global = None
 
 '''need reset_interface'''
-def delete_link(router1,router2,lst_as): # = reset_interface for both sides
+def delete_link(router1,router2,dict_as): # = reset_interface for both sides
     for interface in router1.interfaces.values():
         if interface.connected_router == router2.router_id:
             reset_interface(router1,interface.name)
@@ -37,7 +37,7 @@ def delete_link(router1,router2,lst_as): # = reset_interface for both sides
         if interface.connected_router == router1.router_id:
             reset_interface(router2,interface.name)
     # uploade the AS link list
-    for As in lst_as:
+    for As in dict_as.values():
         if As.as_id == router1.position or As.as_id == router2.position:
             As.update_link_dict(router1.router_id,router2.router_id)
 
@@ -60,13 +60,13 @@ def add_router_to_as(router,AS): #router,AS are objects
 
 '''three fcts concerning address distribution'''
 #distribution of ipv6 addresses for an as
-def get_router_object(router_id,lst_as):
-    for As in lst_as:
+def get_router_object(router_id,dict_as):
+    for As in dict_as.values():
         if router_id in As.routers.keys():
             return As.routers.get(router_id)
     raise Exception("router_id not found")
 
-def as_auto_addressing_for_link(As,ip_range,lst_as): # ip_range = "2001:100::0", AS as an object, lst_as as a list of AS objects
+def as_auto_addressing_for_link(As,ip_range,dict_as): # ip_range = "2001:100::0", AS as an object, dict_as as a list of AS objects
         link_dict_copy = As.link_dict.copy()
         numero_link = 0
         for ((r1,i1),(r2,i2)) in As.link_dict.items(): #all are strings   
@@ -79,8 +79,8 @@ def as_auto_addressing_for_link(As,ip_range,lst_as): # ip_range = "2001:100::0",
                     addresses = (b_address,s_address)          
                 else:
                     addresses = (s_address,b_address)# router having bigger id has bigger address
-            router1 = get_router_object(r1,lst_as)
-            router2 = get_router_object(r2,lst_as)
+            router1 = get_router_object(r1,dict_as)
+            router2 = get_router_object(r2,dict_as)
             if router1.interfaces.get(i1).address_ipv6_global is None:
                 router1.interfaces.get(i1).address_ipv6_global = addresses[0]
             if router2.interfaces.get(i2).address_ipv6_global is None:

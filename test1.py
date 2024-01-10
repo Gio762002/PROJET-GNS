@@ -65,7 +65,8 @@ for router in as1.routers.values():
     fctr.as_loopback_plan(as1)
 for router in as2.routers.values():
     fctr.as_loopback_plan(as2)
-# print("AS1 loopback plan: ",as1.loopback_plan)
+print("AS1 loopback plan: ",as1.loopback_plan)
+print("AS2 loopback plan: ",as2.loopback_plan)
 
 fctr.local_link(r1,r2,r1eth0,r2eth0)
 # print("r1 all_interfaces: ",r1.all_interfaces)
@@ -117,8 +118,12 @@ fctr.as_auto_addressing_for_link(as2,"2001:300::",as_lst)#ok
 # print("AS1 link_dict: ",as1.link_dict)
 # print("AS2 link_dict: ",as2.link_dict)
     
-# fctp.as_enable_rip(as1) ##ok
+fctp.as_enable_rip(as1) ##ok
 # fctp.as_enable_rip(as2)
+
+neighbour_info = fctp.generate_eBGP_neighbour_info(as_lst) #ok
+print("@neighbour_info: ",neighbour_info)
+
 # for router in as1.routers.values():
 #     for interface in router.interfaces.values():
 #         print(router.router_id,":",interface.name,':',interface.protocol_type, ",process:",interface.protocol_process)
@@ -128,3 +133,7 @@ fctr.as_auto_addressing_for_link(as2,"2001:300::",as_lst)#ok
 #     for interface in router.interfaces.values():
 #         print(router.router_id,":",interface.name,':',interface.protocol_type, ",process:",interface.protocol_process)
 #     print("")
+
+# print(fctp.find_eBGP_neighbour_info('4.4.4.4','eth1',neighbour_info)) #ok
+
+fctp.as_enable_BGP(as_lst,as1.loopback_plan)

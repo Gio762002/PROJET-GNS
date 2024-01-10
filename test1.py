@@ -121,8 +121,8 @@ fctr.as_auto_addressing_for_link(as2,"2001:300::",as_dict)#ok
 fctp.as_enable_rip(as1) ##ok
 fctp.as_enable_rip(as2)
 
-neighbour_info = fctp.generate_eBGP_neighbour_info(as_dict) #ok
-print("@neighbour_info: ",neighbour_info)
+neighbor_info = fctp.generate_eBGP_neighbor_info(as_dict) #ok
+print("@neighbor_info: ",neighbor_info)
 
 # for router in as1.routers.values():
 #     for interface in router.interfaces.values():
@@ -134,6 +134,6 @@ print("@neighbour_info: ",neighbour_info)
 #         print(router.router_id,":",interface.name,':',interface.protocol_type, ",process:",interface.protocol_process)
 #     print("")
 
-# print(fctp.find_eBGP_neighbour_info('4.4.4.4','eth1',neighbour_info)) #ok
+# print(fctp.find_eBGP_neighbor_info('4.4.4.4','eth1',neighbor_info)) #ok
 
-fctp.as_enable_BGP(as_dict,as1.loopback_plan)
+fctp.as_enable_BGP(as_dict,as1.loopback_plan,neighbor_info)

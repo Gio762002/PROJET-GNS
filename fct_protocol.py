@@ -32,8 +32,8 @@ def set_ospf(router, process_id): #Cisco: ipv6 router ospf %process_id
             interface.protocol_process = process_id #Cisco: ipv6 ospf %process_id area %area_id
 
 '''对所有AS中的所有ABR,标记ebgp端口,找到其连接的ASBR的信息 输出为一个字典{(as,router,ABR_interface):(as,router,ABR_interface)}'''            
-def generate_eBGP_neighbour_info(dict_as):
-    neighbour_info = {}
+def generate_eBGP_neighbor_info(dict_as):
+    neighbor_info = {}
     #this part generates a dict of all router objects, which to be used to get easily the router object by its id
     #if this part will be used frequently, it is better to put it in a separate function
     dict_routers = {}
@@ -47,14 +47,14 @@ def generate_eBGP_neighbour_info(dict_as):
                 if dict_routers[r1].interfaces.get(int1).protocol_type == None: # reduce the 4-time waste to 1-time waste ?
                     dict_routers[r1].interfaces.get(int1).protocol_type = "eBGP"
                     dict_routers[r2].interfaces.get(int2).protocol_type = "eBGP" #mark the interface as eBGP
-                    neighbour_info[(dict_routers[r1].position,r1,int1)] = (dict_routers[r2].position,r2,int2)
-                    neighbour_info[(dict_routers[r2].position,r2,int2)] = (dict_routers[r1].position,r1,int1)
-    return neighbour_info
+                    neighbor_info[(dict_routers[r1].position,r1,int1)] = (dict_routers[r2].position,r2,int2)
+                    neighbor_info[(dict_routers[r2].position,r2,int2)] = (dict_routers[r1].position,r1,int1)
+    return neighbor_info
 
 
 '''对于一个ABR,找到其ebgp端口连接的ASBR的信息 输出为(as,router,ABR_interface)'''     
-def find_eBGP_neighbour_info(rt,int,neighbour_info): #int(str) = interface.name
-    for key,value in neighbour_info.items():
+def find_eBGP_neighbor_info(rt,int,neighbor_info): #int(str) = interface.name
+    for key,value in neighbor_info.items():
         if key[1] == rt and key[2]==int:
             return value
     return('not found')
@@ -62,8 +62,9 @@ def find_eBGP_neighbour_info(rt,int,neighbour_info): #int(str) = interface.name
 """
 Implement the protocol BGP
 """
-def as_enable_BGP(dict_as, loopback_plan):# loopback_plan: result of fctr.distribute_loopback(dict_as)
-    neighbour = generate_eBGP_neighbour_info(dict_as)
+def as_enable_BGP(dict_as, loopback_plan,neighbor_info):
+    # loopback_plan: result of distribute_loopback(dict_as)
+    # neighbor_info: result of generate_eBGP_neighbor_info(dict_as)
     for As in dict_as.values():
         print("considering AS:",As.as_id)
         for router in As.routers.values(): #router as an object
@@ -72,27 +73,28 @@ def as_enable_BGP(dict_as, loopback_plan):# loopback_plan: result of fctr.distri
             #'' no bgp default ipv4-unicast,
             #'' bgp log-neighbor-changes
             print('considering router:',router.router_id)
+            for loopback in loopback_plan.values():
+                if loopback != router.loopback:
+                    print("Ciscotype1_loopback:",loopback)
+                            
+                    #Cisco: neighbor %loopback remote-as %as_id
+                    #'' neighbor %loopback update-source %interface 
+
             for interface in router.interfaces.values(): #interface as an object
                 if interface.protocol_type == "eBGP":
                     print("get eBGP interface:",interface.name)
-                    # (remote_as,connected_rt,connected_int)=find_eBGP_neighbour_info(router.router_id,interface.name,neighbour)
-                    print("$$$",find_eBGP_neighbour_info(router.router_id,interface.name,neighbour))
-                    # print("Ciscotype1:",remote_as,':',connected_rt,":",connected_int)
-                    
-                    #Cisco: neighbor %interface.address_ipv6_global remote-as %neighbour_as_id
-                else:
-                    for loopback in loopback_plan.values():
-                        if loopback != router.loopback:
-                            print("Ciscotype2:",loopback)
-                            
-                        #Cisco: neighbor %loopback remote-as %as_id
-                        #'' neighbor %loopback update-source %interface                
+                    print("Ciscotype2_$$$neighbor",find_eBGP_neighbor_info(router.router_id,interface.name,neighbor_info))
+                   
+                    #Cisco: neighbor %interface.address_ipv6_global remote-as %neighbor_as_id
+            
+               
             #!
             #address-family ipv6
             #copie '' neighbor %loopback remote-as %as_id and replace "remote-as..." with "activate"
             for interface in router.interfaces.values():
+                if interface.statu == "up":
                 #Cisco: '' network %interface.address_ipv6_global /mask 
-                print("Ciscotype3:",interface.address_ipv6_global)
+                    print("Ciscotype3:",interface.address_ipv6_global)
                 
             #Cisco: '' exit-address-family
             #!

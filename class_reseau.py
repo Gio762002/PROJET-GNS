@@ -7,7 +7,7 @@ class router:
         self.all_interfaces = {} #interface.name : occupied? (1 or 0)
         #self.routing_table = {} ##maybe not needed
         self.interfaces = {} #interface.name: interface(object)
-        self.neighbours = [] #router_id, extrait de self.interface
+        self.neighbors = [] #router_id, extrait de self.interface
         self.type = type # ABR, ASBR, Internal 
         self.position = None # name of the AS where the router is located, to be tracked for any modification 
 

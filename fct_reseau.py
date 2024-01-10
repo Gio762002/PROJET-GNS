@@ -13,13 +13,13 @@ def local_link(router1,router2,interface1,interface2):#all objects
     interface1.statu = "up" # need to be associated by corresponding Cisco command
     interface1.connected_router = router2.router_id
     interface1.connected_interface = interface2.name
-    router1.neighbours.append(router2.router_id)
+    router1.neighbors.append(router2.router_id)
 
     router2.all_interfaces[interface2.name] = 1
     interface2.statu = "up" # need to be associated by corresponding Cisco command
     interface2.connected_router = router1.router_id
     interface2.connected_interface = interface1.name
-    router2.neighbours.append(router1.router_id)
+    router2.neighbors.append(router1.router_id)
 
 def reset_interface(router,int): # only one side
     router.all_interfaces[int] = 0

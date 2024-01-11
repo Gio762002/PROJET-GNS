@@ -1,6 +1,8 @@
 import class_reseau as classr
 import fct_reseau as fctr
 import fct_protocol as fctp
+import fct_show as sh
+
 
 as1 = classr.autonomous_system(1,"OSPF")
 as2 = classr.autonomous_system(2,"RIP")
@@ -65,8 +67,7 @@ for router in as1.routers.values():
     fctr.as_loopback_plan(as1)
 for router in as2.routers.values():
     fctr.as_loopback_plan(as2)
-print("AS1 loopback plan: ",as1.loopback_plan)
-print("AS2 loopback plan: ",as2.loopback_plan)
+# sh.show_as_loopback_plan(as1)
 
 fctr.local_link(r1,r2,r1eth0,r2eth0)
 # print("r1 all_interfaces: ",r1.all_interfaces)
@@ -86,54 +87,26 @@ as2.construct_link_dict()
 
 
 fctr.as_auto_addressing_for_link(as1,"2001:300::",as_dict)#ok
-# for r in as1.routers.values():
-#     for interface in r.interfaces.keys(): #interface as a string
-#         print(r.router_id,":",interface,':',r.interfaces[interface].address_ipv6_global)
-#     print(" ")
-# print(r4.router_id,": eth1:",r4.interfaces['eth1'].address_ipv6_global)
-# print(r5.router_id,": eth1:",r5.interfaces['eth1'].address_ipv6_global)
-# print("")
+
+
+# sh.show_as_router_address(as1)
 
 fctr.as_auto_addressing_for_link(as2,"2001:300::",as_dict)#ok
-# for router in as2.routers.values():
-#     for interface in router.interfaces.keys(): #interface as a string
-#         print(router.router_id,":",interface,':',router.interfaces[interface].address_ipv6_global)
-#     print(" ")
 
-
-# # test for modifying config : delete link/ add link
-# fctr.delete_link(r1,r2,as_dict) ##ok
-# for interface in r1.interfaces.values():
-#     print(interface.name,":",interface.address_ipv6_global)
-# print(" ")
-# for interface in r2.interfaces.values():
-#     print(interface.name,":",interface.address_ipv6_global)
-# print(" ")
-
-# for As in as_dict.values():
-#     for router in As.routers.values():
-#         for interface in router.interfaces.values():
-#             print(router.router_id,":",interface.name,':',interface.address_ipv6_global)
-#         print(" ")
-# print("AS1 link_dict: ",as1.link_dict)
-# print("AS2 link_dict: ",as2.link_dict)
     
-fctp.as_enable_rip(as1) ##ok
-fctp.as_enable_rip(as2)
 
 neighbor_info = fctp.generate_eBGP_neighbor_info(as_dict) #ok
-print("@neighbor_info: ",neighbor_info)
+# print("@neighbor_info: ",neighbor_info)
 
-# for router in as1.routers.values():
-#     for interface in router.interfaces.values():
-#         print(router.router_id,":",interface.name,':',interface.protocol_type, ",process:",interface.protocol_process)
-#     print("")
 
-# for router in as2.routers.values():
-#     for interface in router.interfaces.values():
-#         print(router.router_id,":",interface.name,':',interface.protocol_type, ",process:",interface.protocol_process)
-#     print("")
+fctp.as_enable_rip(as1) #ok
+fctp.as_enable_ospf(as2) #ok
+
+# sh.show_as_router_status(as1)
+
+
+
 
 # print(fctp.find_eBGP_neighbor_info('4.4.4.4','eth1',neighbor_info)) #ok
 
-fctp.as_enable_BGP(as_dict,as1.loopback_plan,neighbor_info)
+fctp.as_enable_BGP(as_dict,as1.loopback_plan,neighbor_info) #ok

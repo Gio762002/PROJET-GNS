@@ -8,28 +8,37 @@ Implement the protocol RIP
 def as_enable_rip(As): 
     process_counter = {} # {rt:process counter}
     for ((rt1,int1),(rt2,_)) in As.link_dict.items():
-        process_counter[rt1] = 0 if rt1 not in process_counter.keys() else process_counter[rt1]
+        process_counter[rt1] = 1 if rt1 not in process_counter.keys() else process_counter[rt1]
         if rt1 in As.routers.keys() and rt2 in As.routers.keys(): #except ABR,ASBR
             router = As.routers.get(rt1)
             interface = router.interfaces.get(int1)
+            if interface.protocol_type == "OSPF":
+                raise Exception("RIP and OSPF cannot be enabled at the same time")
             if interface.protocol_type == None:
-                process_counter[rt1] += 1
                 interface.protocol_type = "RIP"
-                interface.protocol_process = process_counter[rt1] #Cisco: ipv6 rip process_id enable (except ABR,ASBR)
+                interface.protocol_process = process_counter[rt1] 
+                #Cisco: ipv6 rip process_id enable (except ABR,ASBR)
 
 
 """
 Implement the protocol OSPF
 """
-def set_ospf(router, process_id): #Cisco: ipv6 router ospf %process_id
-    # ''router_id %router.router_id
-    # ''log-adjaency-changes
-    for interface in router.interfaces.values(): #interface as an object
-        if interface.protocol_type == "eBGP": 
-            pass # Cisco: ''passive-interface %interface_name
-    for interface in router.interfaces.values():
-        if interface.statu == "up":
-            interface.protocol_process = process_id #Cisco: ipv6 ospf %process_id area %area_id
+def as_enable_ospf(As):
+    process_id = 1 #every router has only one process for igp
+    for router in As.routers.values():
+        for interface in router.interfaces.values(): #interface as an object
+            if interface.protocol_type == "eBGP": 
+                pass# print("ospf passive interface:",interface.name) 
+                # Cisco: ''passive-interface %interface_name
+
+        for interface in router.interfaces.values():
+            if interface.protocol_type == "RIP":
+                raise Exception("RIP and OSPF cannot be enabled at the same time")
+            if interface.statu == "up" and interface.protocol_type == None:
+                interface.protocol_type = "OSPF"
+                interface.protocol_process = process_id #Cisco: ipv6 ospf %process_id area %area_id
+                pass# print("ipv6 ospf:",process_id,"area:",router.position)
+
 
 '''对所有AS中的所有ABR,标记ebgp端口,找到其连接的ASBR的信息 输出为一个字典{(as,router,ABR_interface):(as,router,ABR_interface)}'''            
 def generate_eBGP_neighbor_info(dict_as):
@@ -75,25 +84,27 @@ def as_enable_BGP(dict_as, loopback_plan,neighbor_info):
             print('considering router:',router.router_id)
             for loopback in loopback_plan.values():
                 if loopback != router.loopback:
-                    print("Ciscotype1_loopback:",loopback)
+                    pass
+                    # print("Ciscotype1_loopback:",loopback)
                             
                     #Cisco: neighbor %loopback remote-as %as_id
                     #'' neighbor %loopback update-source %interface 
 
             for interface in router.interfaces.values(): #interface as an object
                 if interface.protocol_type == "eBGP":
-                    print("get eBGP interface:",interface.name)
-                    print("Ciscotype2_$$$neighbor",find_eBGP_neighbor_info(router.router_id,interface.name,neighbor_info))
+                    pass
+                    # print("get eBGP interface:",interface.name)
+                    # print("Ciscotype2_$$$neighbor",find_eBGP_neighbor_info(router.router_id,interface.name,neighbor_info))
                    
                     #Cisco: neighbor %interface.address_ipv6_global remote-as %neighbor_as_id
             
-               
             #!
             #address-family ipv6
             #copie '' neighbor %loopback remote-as %as_id and replace "remote-as..." with "activate"
             for interface in router.interfaces.values():
                 if interface.statu == "up":
                 #Cisco: '' network %interface.address_ipv6_global /mask 
+                    pass
                     print("Ciscotype3:",interface.address_ipv6_global)
                 
             #Cisco: '' exit-address-family

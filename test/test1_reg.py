@@ -1,8 +1,13 @@
-import class_reseau as classr
-import fct_reseau as fctr
-import fct_protocol as fctp
-import fct_show as sh
+import sys
+sys.path.append('src/')
+from classes import class_reseau as classr
+from classes import class_output as output
+from functions import fct_reseau as fctr
+from functions import fct_protocol_reg as fctp
+from functions import fct_show as sh
 
+
+reg = output.registrar()
 
 as1 = classr.autonomous_system(1,"OSPF")
 as2 = classr.autonomous_system(2,"RIP")
@@ -23,6 +28,9 @@ r5.router_id = "5.5.5.5"
 r6 = classr.router("Internal")
 r6.router_id = "6.6.6.6" 
 
+for router in [r1,r2,r3,r4,r5,r6]:
+    reg.create_register(router.router_id)
+# reg.display(reg.general_register)
 
 #init interfaces
 r1eth0 = classr.interface("eth0")
@@ -30,31 +38,38 @@ r1eth1 = classr.interface("eth1")
 r1eth2 = classr.interface("eth2")
 for interface in [r1eth0,r1eth1,r1eth2]:
     fctr.init_interface(r1,interface)
+    reg.add_entry(r1.router_id,interface.name)
 r2eth0 = classr.interface("eth0")
 r2eth1 = classr.interface("eth1")
 r2eth2 = classr.interface("eth2")
 for interface in [r2eth0,r2eth1,r2eth2]:
     fctr.init_interface(r2,interface)
+    reg.add_entry(r2.router_id,interface.name)
 r3eth0 = classr.interface("eth0")
 r3eth1 = classr.interface("eth1")
 r3eth2 = classr.interface("eth2")
 for interface in [r3eth0,r3eth1,r3eth2]:
     fctr.init_interface(r3,interface)
+    reg.add_entry(r3.router_id,interface.name)
 r4eth0 = classr.interface("eth0")
 r4eth1 = classr.interface("eth1")
 r4eth2 = classr.interface("eth2")
 for interface in [r4eth0,r4eth1,r4eth2]:
     fctr.init_interface(r4,interface)
+    reg.add_entry(r4.router_id,interface.name)
 r5eth0 = classr.interface("eth0")
 r5eth1 = classr.interface("eth1")
 r5eth2 = classr.interface("eth2")
 for interface in [r5eth0,r5eth1,r5eth2]:
     fctr.init_interface(r5,interface)
+    reg.add_entry(r5.router_id,interface.name)
 r6eth0 = classr.interface("eth0")
 r6eth1 = classr.interface("eth1")
 r6eth2 = classr.interface("eth2")
 for interface in [r6eth0,r6eth1,r6eth2]:
     fctr.init_interface(r6,interface)
+    reg.add_entry(r6.router_id,interface.name)
+# reg.display(reg.general_register)
 
 for router in [r1,r2,r3]:
     fctr.add_router_to_as(router,as1)
@@ -99,8 +114,9 @@ neighbor_info = fctp.generate_eBGP_neighbor_info(as_dict) #ok
 # print("@neighbor_info: ",neighbor_info)
 
 
-fctp.as_enable_rip(as1) #ok
-fctp.as_enable_ospf(as2) #ok
+fctp.as_enable_rip(as1,reg) #ok
+fctp.as_enable_ospf(as2,reg) #ok
+# reg.display(reg.general_register)
 
 # sh.show_as_router_status(as1)
 
@@ -109,4 +125,7 @@ fctp.as_enable_ospf(as2) #ok
 
 # print(fctp.find_eBGP_neighbor_info('4.4.4.4','eth1',neighbor_info)) #ok
 
-fctp.as_enable_BGP(as_dict,as1.loopback_plan,neighbor_info) #ok
+fctp.as_enable_BGP(as_dict,as1.loopback_plan,neighbor_info,reg) #ok
+reg.display(reg.general_register)
+
+reg.save_as_txt()

@@ -124,3 +124,5 @@ fctp.as_enable_ospf(as2,reg) #ok
 
 fctp.as_enable_BGP(as_dict,as1.loopback_plan,neighbor_info,reg) #ok
 reg.display(reg.general_register)
+
+reg.save_as_txt()

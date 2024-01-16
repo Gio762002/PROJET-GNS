@@ -4,13 +4,19 @@ class registrar(): #designed for routers and their interfaces
         self.general_register = {}
 
     def create_register(self, name):
-        self.general_register[name] = {"all": []} #all: write commun Cisco commands for all interfaces
+        self.general_register[name] = {"general": []} #general: write commun Cisco commands for all interfaces
     
-    def add_entry(self, name, entry):
+    def add_entry(self, name, entry): #put interface.name here as entry
         self.general_register[name][entry] = []
 
     def write(self, name, entry, command):
-        self.general_register[name][entry].append(command)
+        try:
+            if name in self.general_register and entry in self.general_register[name]:
+                self.general_register[name][entry].append(command)
+            else:
+                print("Invalid name or entry")
+        except Exception as e:
+            print("Error:", str(e))
     
     def display(self, root, indent=0): # Added missing parameter name
         for key, value in root.items(): # Fixed reference to general_register
@@ -24,12 +30,3 @@ class registrar(): #designed for routers and their interfaces
                 print('\t' * (indent+1) + '--' + str(value)) # Fixed reference to indent
 
 
-'''
-quick test, verified
-'''
-# r = registrar()
-# r.create_register("r1")
-# r.add_entry("r1", "eth0")
-# r.add_entry("r1", "eth1")
-# r.write("r1", "eth0", "ipv6 address 2001:100::1/64")
-# r.display(r.general_register)

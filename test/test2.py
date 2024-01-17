@@ -1,7 +1,12 @@
 import json
+import sys
 import class_reseau as classr
+import class_output as output
 import fct_reseau as fctr
-import fct_protocol as fctp
+import fct_protocol_reg as fctp
+import fct_show as sh
+
+reg = output.registrar()
 
 file_path = 'network_intent.json'
 
@@ -33,35 +38,62 @@ with open(file_path, 'r') as file:
 as_dict = {}
 router_dic = {}
 router_interface_dic = {}
-i = 0
+loopback_dic = {}
+i = 0       # router_id
+
 for as_system in network_intent['AS']:
-    print(as_system['number'],as_system['protocol'])
+    # print(as_system['number'],as_system['protocol'])
     # create as_objects dans an dictionary as_dict
     as_name = f"as{as_system['number']}"
     as_instance = classr.autonomous_system(as_system['number'],as_system['protocol'])
     as_dict[as_name] = as_instance
-    # distribute loopback
-    fctr.as_auto_loopback(as_dict[as_name], router['loopback_range'])
+
+    loopback_dic[as_name] = as_system['loopback_range']
 
     for router in as_system['routers']:
         i += 1 
+        # create router_objects dans an dictionary router_dic
         router_instance = classr.router()
-        print(router['name'])
-        print(f"{i}.{i}.{i}.{i}")
         router_name = router['name']
         router_dic[router_name] = router_instance
         router_dic[router_name].router_id = f"{i}.{i}.{i}.{i}"
-
+        # create register
+        reg.create_register(router_dic[router_name].router_id)
+        # add router to as
         fctr.add_router_to_as(router_dic[router_name], as_dict[as_name])
         
         interfaces = router['interfaces']
+        # interface id
+        j = 0
         for interface in interfaces:
-            j = 0
-            print(interface['name'])
-            print(f"{router_name}eth{j}")
+            # create interface_objects dans an dictionary router_interface_dic
             interface_name = f"{router_name}eth{j}"
             router_interface_instance = classr.interface(interface['name'])
             router_interface_dic[interface_name] = router_interface_instance
-            fctr.init_interface(router_name, router_interface_dic[interface_name])
+            # init interface
+            fctr.init_interface(router_dic[router_name], router_interface_dic[interface_name])
+            reg.add_entry(router_dic[router_name].router_id, router_interface_dic[interface_name].name)
 
-              
+            j += 1
+
+# distribute loopback ip for each router
+for AS_name, AS in as_dict.items():
+    print(loopback_dic[AS_name])
+    fctr.as_auto_loopback(AS, loopback_dic[AS_name])
+    print(AS.as_id)
+    for router in AS.routers.values():
+        print(router.router_id)
+        fctr.as_loopback_plan(AS)
+        print(router.loopback)
+
+
+
+
+# def print_dict_contents(input_dict):
+#     for key, value in input_dict.items():
+#         print(f"Key: {key}, Value: {value}")
+#     print()
+
+# print_dict_contents(as_dict)
+# print_dict_contents(router_dic)
+# print_dict_contents(router_interface_dic)

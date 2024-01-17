@@ -8,9 +8,10 @@ Implement the protocol RIP
 """
 def as_enable_rip(As,reg):  
     process_id = 1 
+    order = 3
     for router in As.routers.values():
-        reg.write(router.router_id,"general","ipv6 router rip "+str(process_id))
-        reg.write(router.router_id,"general"," redistribute connected")
+        reg.write(router.router_id,order,"ipv6 router rip "+str(process_id))
+        reg.write(router.router_id,order," redistribute connected")
         
         for interface in router.interfaces.values():
             if interface.protocol_type == "OSPF":
@@ -29,15 +30,16 @@ Implement the protocol OSPF
 """
 def as_enable_ospf(As,reg):
     process_id = 2 #different from RIP
+    order = 3
     for router in As.routers.values():
-        reg.write(router.router_id,"general","ipv6 router ospf "+str(process_id))
-        reg.write(router.router_id,"general"," router-id "+router.router_id)
-        reg.write(router.router_id,"general"," log-adjacency-changes")
+        reg.write(router.router_id,order,"ipv6 router ospf "+str(process_id))
+        reg.write(router.router_id,order," router-id "+router.router_id)
+        reg.write(router.router_id,order," log-adjacency-changes")
         for interface in router.interfaces.values(): #interface as an object
             if interface.protocol_type == "eBGP":             
                 # Cisco: ''passive-interface %interface_name
-                reg.write(router.router_id, "general"," passive-interface "+interface.name)
-        reg.write(router.router_id,"general"," !")
+                reg.write(router.router_id, order," passive-interface "+interface.name)
+        reg.write(router.router_id,order," !")
         
         for interface in router.interfaces.values():
             if interface.protocol_type == "RIP":
@@ -92,61 +94,59 @@ def as_enable_BGP(dict_as, loopback_plan, neighbor_info, reg,  apply_policy=Fals
     #加快运行速度：不是反复执行相同的boucle以保证指令顺序而是在输出列表里每条消息前加一个顺序指示符，并在最终的输出时排序
     # loopback_plan: result of distribute_loopback(dict_as)
     # neighbor_info: result of generate_eBGP_neighbor_info(dict_as)
+    order = 1
     for As in dict_as.values():
         for router in As.routers.values(): #router as an object
             #Cisco: router bgp %as_id， 
             #'' bgp router-id %router_id, 
             #'' no bgp default ipv4-unicast,
             #'' bgp log-neighbor-changes
-            reg.write(router.router_id,"general","router bgp "+str(As.as_id))
-            reg.write(router.router_id,"general"," bgp router-id "+router.router_id)
-            reg.write(router.router_id,"general"," no bgp default ipv4-unicast")
-            reg.write(router.router_id,"general"," bgp log-neighbor-changes")
+            reg.write(router.router_id,order,"router bgp "+str(As.as_id))
+            reg.write(router.router_id,order," bgp router-id "+router.router_id)
+            reg.write(router.router_id,order," no bgp default ipv4-unicast")
+            reg.write(router.router_id,order," bgp log-neighbor-changes")
 
             for loopback in loopback_plan.values():
                 if loopback != router.loopback:
                     #Cisco: neighbor %loopback remote-as %as_id
                     #'' neighbor %loopback update-source %interface 
-                    reg.write(router.router_id,"general"," neighbor "+str(loopback)+" remote-as "+str(router.position)) 
-                    reg.write(router.router_id,"general"," neighbor "+str(loopback)+" update-source loopback0")
+                    reg.write(router.router_id,order," neighbor "+str(loopback)+" remote-as "+str(router.position)) 
+                    reg.write(router.router_id,order," neighbor "+str(loopback)+" update-source loopback0")
 
             for interface in router.interfaces.values(): #interface as an object
                 if interface.protocol_type == "eBGP": #对于每个ebgp接口
                     (rm_as,_,_,ABR_int_address) = find_eBGP_neighbor_info(router.router_id,interface.name,neighbor_info) 
                     #Cisco: neighbor %interface.address_ipv6_global remote-as %neighbor_as_id
-                    reg.write(router.router_id,"general"," neighbor "+ABR_int_address+" remote-as "+str(rm_as))
+                    reg.write(router.router_id,order," neighbor "+ABR_int_address+" remote-as "+str(rm_as))
             
-            reg.write(router.router_id,"general","!")
-            reg.write(router.router_id,"general","address-family ipv6")
+            reg.write(router.router_id,order,"!")
+            reg.write(router.router_id,order,"address-family ipv6")
             
             for loopback in loopback_plan.values():
                 if loopback != router.loopback:
                     # copie '' neighbor %loopback remote-as %as_id and replace "remote-as..." with "activate"
-                    reg.write(router.router_id,"general"," neighbor "+str(loopback)+" activate") 
+                    reg.write(router.router_id,1," neighbor "+str(loopback)+" activate") 
                     if apply_policy:
-                        reg.write(router.router_id,"general"," neighbor "+str(loopback)+" send-community")           
+                        reg.write(router.router_id,1," neighbor "+str(loopback)+" send-community")           
         
             for interface in router.interfaces.values(): #对于每个ebgp接口
                 if apply_policy and interface.protocol_type == "eBGP":
-                    reg.write(router.router_id,"general"," neighbor "+str(interface.address_ipv6_global)+" activate")
-                    reg.write(router.router_id,"general"," neighbor "+str(interface.address_ipv6_global)+" route-map TAG_COMMUNITY in")
-                    reg.write(router.router_id,"general"," neighbor "+str(interface.address_ipv6_global)+" route-map FILTER_COMMUNITY out")
+                    reg.write(router.router_id,order," neighbor "+str(interface.address_ipv6_global)+" activate")
+                    reg.write(router.router_id,order," neighbor "+str(interface.address_ipv6_global)+" route-map TAG_COMMUNITY in")
+                    reg.write(router.router_id,order," neighbor "+str(interface.address_ipv6_global)+" route-map FILTER_COMMUNITY out")
                     # 单独写
             for interface in router.interfaces.values(): #对于每个启用的接口  
                 if interface.statu == "up":
                 #Cisco: '' network %interface.address_ipv6_global /mask 
-                    reg.write(router.router_id,"general"," network "+str(interface.address_ipv6_global)+str('/64'))
+                    reg.write(router.router_id,order," network "+str(interface.address_ipv6_global)+str('/64'))
             
-            reg.write(router.router_id,"general"," redistribute connected route-map SET_COMMUNITY")
-
-        
-            # if router.interfaces.get().protocol_type == "RIP":
-            #     reg.write(router.router_id,"general"," redistribute rip route-map SET_COMMUNITY")
-            
+            reg.write(router.router_id,order," redistribute connected route-map SET_COMMUNITY")
+            process = 1 if As.igp == "RIP" else 2
+            reg.write(router.router_id,order," redistribute "+ As.igp.lower() + " "+ str(process) +" route-map SET_COMMUNITY")
             #Cisco: '' exit-address-family
             #!
-            reg.write(router.router_id,"general"," exit-address-family")
-            reg.write(router.router_id,"general","!")
+            reg.write(router.router_id,order," exit-address-family")
+            reg.write(router.router_id,order,"!")
 
 '''
 functions related to output
@@ -185,32 +185,35 @@ functions related to rooting policies
 """
 
 def create_community_list(r, int, route_map_name, community_num, reg): #route_map_name: str
-    reg.write(r,"general","ip community-list standard "+route_map_name+" permit "+str(community_num))
+    order = 2
+    reg.write(r,order,"ip community-list standard "+route_map_name+" permit "+str(community_num))
     reg.log[r][int]["route_map_name"] = route_map_name
 
 def create_prefix_list(r, int, route_map_name, seq_num, reg):
-    reg.write(r,"general","ip prefix-list "+route_map_name+" seq "+seq_num+" permit ::/0 le 128")
+    order = 4
+    reg.write(r,order,"ip prefix-list "+route_map_name+" seq "+seq_num+" permit ::/0 le 128")
     reg.log[r][int]["route_map_name"] = route_map_name
 
 def create_route_map(r, route_map_name, seq_num, community_num, action, reg):
+    order = 5
     if  "TAG_COMMUNITY" in action:
-        reg.write(r,"general","route-map " + action + " permit " + seq_num)
-        reg.write(r,"general","match ipv6 address prefix-list "+ route_map_name)
+        reg.write(r,order,"route-map " + action + " permit " + seq_num)
+        reg.write(r,order,"match ipv6 address prefix-list "+ route_map_name)
         
         localpref = {"provider":100,"settlement-free peer":200,"customer":300}
-        reg.write(r,"general","set local preference " + str(localpref["?"]))#?需要获得信息，连接的as的community
-        reg.write(r,"general","set community " + str(community_num)+" additive")
+        reg.write(r,order,"set local preference " + str(localpref["?"]))#?需要获得信息，连接的as的community
+        reg.write(r,order,"set community " + str(community_num)+" additive")
 
     elif "SET_COMMUNITY" in action:
-        reg.write(r,"general","route-map " + action + " permit " + str(seq_num))
-        reg.write(r,"general","set community " + str(community_num)+" additive")
-        reg.write(r,"general","!")
+        reg.write(r,order,"route-map " + action + " permit " + str(seq_num))
+        reg.write(r,order,"set community " + str(community_num)+" additive")
+        reg.write(r,order,"!")
     
     elif "FILTER_COMMUNITY" in action:
-        reg.write(r,"general","route-map "+route_map_name+" permit "+str(seq_num))
-        reg.write(r,"general"," match community "+route_map_name)
-        reg.write(r,"general","!")
-        reg.write(r,"general","route-map "+route_map_name+" deny "+str(seq_num+10))
+        reg.write(r,order,"route-map "+route_map_name+" permit "+str(seq_num))
+        reg.write(r,order," match community "+route_map_name)
+        reg.write(r,order,"!")
+        reg.write(r,order,"route-map "+route_map_name+" deny "+str(seq_num+10))
 
 
 # def apply_policy(router,reg):#router as an object
@@ -225,5 +228,4 @@ def create_route_map(r, route_map_name, seq_num, community_num, action, reg):
 
 
 
-# reg.write(router.router_id,"general","ipv6 router rip "+str(process_id))
-#                 reg.write(router.router_id,"general"," redistribute connected")
+

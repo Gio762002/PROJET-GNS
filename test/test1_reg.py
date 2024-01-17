@@ -115,12 +115,13 @@ neighbor_info = fctp.generate_eBGP_neighbor_info(as_dict) #ok
 
 fctp.as_config_interfaces(as_dict,reg)
 fctp.as_config_unused_interface_and_loopback0(as_dict,reg) 
-fctp.as_enable_BGP(as_dict,as1.loopback_plan,neighbor_info,reg,True) 
 fctp.as_enable_rip(as1,reg) #ok
 fctp.as_enable_ospf(as2,reg) #ok
+fctp.as_enable_BGP(as_dict,as1.loopback_plan,neighbor_info,reg,True) 
+
 # reg.display(reg.general_register)
 
-sh.show_as_router_status(as1)
+# sh.show_as_router_status(as1)
 
 
 # print(fctp.find_eBGP_neighbor_info('4.4.4.4','eth1',neighbor_info)) #ok

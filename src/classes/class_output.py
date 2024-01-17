@@ -6,7 +6,7 @@ class registrar(): #designed for routers and their interfaces
         self.log = {}
 
     def create_register(self, name):
-        self.general_register[name] = {"general": [],"Loopback0":[]} #general: write commun Cisco commands for all interfaces
+        self.general_register[name] = {1:[],2:[],3:[],4:[],5:[],"Loopback0":[]} #general: write commun Cisco commands for all interfaces
         self.log[name] = {}
     
     def add_entry(self, name, entry): #put interface.name here as entry
@@ -16,7 +16,7 @@ class registrar(): #designed for routers and their interfaces
     def write(self, name, entry, command):
         try:
             if name in self.general_register and entry in self.general_register[name]:
-                if entry != "general":
+                if type(entry)!=int:
                     self.general_register[name][entry].append(command)
                 else:
                     self.general_register[name][entry].append(command)
@@ -47,12 +47,24 @@ class registrar(): #designed for routers and their interfaces
             
             with open(file, "w") as f:
                 for key, value in self.general_register[target].items():
-                    if key == "general":
-                        for i in value:
-                            f.write(i + "\n")
-                    else:
+                    if type(key) != int : 
                         f.write("interface "+ key + "\n")
                         for i in value:
                             f.write(" " + i + "\n")
                         f.write("!\n")
+                for key, value in self.general_register[target].items():
+                    if type(key) == int :
+                        for i in value:
+                            f.write(" " + i + "\n")
+                        f.write("!\n")
         print("files generated successfully at output/")
+
+
+        """
+        general order:
+        # 1 : bgp
+        # 2 : community-list
+        # 3 : ospf/rip
+        # 4 : prefix-list
+        # 5 : route-map
+        """

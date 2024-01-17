@@ -48,7 +48,7 @@ class registrar(): #designed for routers and their interfaces
                         for i in value:
                             f.write(i + "\n")
                     else:
-                        f.write("interface "+key + "\n")
+                        f.write("interface "+ key + "\n")
                         for i in value:
                             f.write(" " + i + "\n")
                         f.write("!\n")

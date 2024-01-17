@@ -9,8 +9,8 @@ from functions import fct_show as sh
 
 reg = output.registrar()
 
-as1 = classr.autonomous_system(1,"OSPF")
-as2 = classr.autonomous_system(2,"RIP")
+as1 = classr.autonomous_system(1,"OSPF","customer",101)
+as2 = classr.autonomous_system(2,"RIP","provider",102)
 as_dict = {as1.as_id:as1,as2.as_id:as2} # as a global container of all objects
 
 #3 router in AS1                                                                                    
@@ -113,6 +113,7 @@ fctr.as_auto_addressing_for_link(as2,"2001:300::",as_dict)#ok
 neighbor_info = fctp.generate_eBGP_neighbor_info(as_dict) #ok
 # print("@neighbor_info: ",neighbor_info)
 
+fctp.as_config_interfaces(as_dict,reg)
 fctp.as_config_unused_interface_and_loopback0(as_dict,reg) 
 fctp.as_enable_rip(as1,reg) #ok
 fctp.as_enable_ospf(as2,reg) #ok
@@ -123,7 +124,7 @@ fctp.as_enable_ospf(as2,reg) #ok
 
 # print(fctp.find_eBGP_neighbor_info('4.4.4.4','eth1',neighbor_info)) #ok
 
-fctp.as_enable_BGP(as_dict,as1.loopback_plan,neighbor_info,reg) #ok
+fctp.as_enable_BGP(as_dict,as1.loopback_plan,neighbor_info,reg,True) #ok
 # reg.display(reg.general_register)
 
 reg.save_as_txt()

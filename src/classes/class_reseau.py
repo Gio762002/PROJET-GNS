@@ -25,8 +25,10 @@ class interface:
 
 class autonomous_system:
 
-    def __init__(self, as_id, igp):
+    def __init__(self, as_id, igp, community,community_number):
         self.as_id = as_id
+        self.community = community # "customer", "provider", "settlement-free peer"
+        self.community_number = community_number
         self.routers = {} # router_id : router(object)
         self.link_dict = {} #(router_id,interface.name):(router_id,interface.name)
         self.loopback_plan = {} # router_id : loopback

@@ -8,20 +8,21 @@ Implement the protocol RIP
 """
 def as_enable_rip(As,reg):  
     process_id = 1 
-    for ((r1,int1),(r2,_)) in As.link_dict.items():
-        if r1 in As.routers.keys() and r2 in As.routers.keys(): #except ABR,ASBR
-            router = As.routers.get(r1)
-            interface = router.interfaces.get(int1)
+    for router in As.routers.values():
+        reg.write(router.router_id,"general","ipv6 router rip "+str(process_id))
+        reg.write(router.router_id,"general"," redistribute connected")
+        
+        for interface in router.interfaces.values():
             if interface.protocol_type == "OSPF":
                 raise Exception("RIP and OSPF cannot be enabled at the same time")
-            if interface.protocol_type == None:
+            if interface.statu == "up" and interface.protocol_type == None:
                 interface.protocol_type = "RIP"
                 interface.protocol_process = process_id      
-                #Cisco: ipv6 rip process_id enable
-                reg.write(r1, interface.name,"ipv6 rip "+str(process_id)+" enable")
-    for router in As.routers.values():
+                #Cisco: ipv6 rip process_id enableS
+                reg.write(router.router_id, interface.name,"ipv6 rip "+str(process_id)+" enable")
         reg.write(router.router_id,"Loopback0","ipv6 rip "+str(process_id)+" enable")
-
+        
+        
 
 """
 Implement the protocol OSPF
@@ -29,11 +30,15 @@ Implement the protocol OSPF
 def as_enable_ospf(As,reg):
     process_id = 2 #different from RIP
     for router in As.routers.values():
+        reg.write(router.router_id,"general","ipv6 router ospf "+str(process_id))
+        reg.write(router.router_id,"general"," router-id "+router.router_id)
+        reg.write(router.router_id,"general"," log-adjacency-changes")
         for interface in router.interfaces.values(): #interface as an object
             if interface.protocol_type == "eBGP":             
                 # Cisco: ''passive-interface %interface_name
-                reg.write(router.router_id, interface.name," passive-interface "+interface.name)
-
+                reg.write(router.router_id, "general"," passive-interface "+interface.name)
+        reg.write(router.router_id,"general"," !")
+        
         for interface in router.interfaces.values():
             if interface.protocol_type == "RIP":
                 raise Exception("RIP and OSPF cannot be enabled at the same time")
@@ -125,12 +130,19 @@ def as_enable_BGP(dict_as, loopback_plan, neighbor_info, reg,  apply_policy=Fals
                 if apply_policy and interface.protocol_type == "eBGP":
                     reg.write(router.router_id,"general"," neighbor "+str(interface.address_ipv6_global)+" activate")
                     reg.write(router.router_id,"general"," neighbor "+str(interface.address_ipv6_global)+" route-map TAG_COMMUNITY in")
-            
+                    reg.write(router.router_id,"general"," neighbor "+str(interface.address_ipv6_global)+" route-map FILTER_COMMUNITY out")
+                    # 单独写
             for interface in router.interfaces.values(): #对于每个启用的接口  
                 if interface.statu == "up":
                 #Cisco: '' network %interface.address_ipv6_global /mask 
                     reg.write(router.router_id,"general"," network "+str(interface.address_ipv6_global)+str('/64'))
-                     
+            
+            reg.write(router.router_id,"general"," redistribute connected route-map SET_COMMUNITY")
+
+        
+            # if router.interfaces.get().protocol_type == "RIP":
+            #     reg.write(router.router_id,"general"," redistribute rip route-map SET_COMMUNITY")
+            
             #Cisco: '' exit-address-family
             #!
             reg.write(router.router_id,"general"," exit-address-family")
@@ -172,14 +184,18 @@ def as_config_unused_interface_and_loopback0(dict_as,reg):
 functions related to rooting policies
 """
 
-def create_community_list(r,list_name,community_num,reg): #list_name: str
-    reg.write(r,"general","ip community-list standard "+list_name+" permit "+str(community_num))
-def create_prefix_list(r,list_name,seq_num,reg):
-    reg.write(r,"general","ip prefix-list "+list_name+" seq "+seq_num+" permit ::/0 le 128")
-def create_route_map(r,list_name,seq_num,community_num,action,reg):
+def create_community_list(r, int, route_map_name, community_num, reg): #route_map_name: str
+    reg.write(r,"general","ip community-list standard "+route_map_name+" permit "+str(community_num))
+    reg.log[r][int]["route_map_name"] = route_map_name
+
+def create_prefix_list(r, int, route_map_name, seq_num, reg):
+    reg.write(r,"general","ip prefix-list "+route_map_name+" seq "+seq_num+" permit ::/0 le 128")
+    reg.log[r][int]["route_map_name"] = route_map_name
+
+def create_route_map(r, route_map_name, seq_num, community_num, action, reg):
     if  "TAG_COMMUNITY" in action:
         reg.write(r,"general","route-map " + action + " permit " + seq_num)
-        reg.write(r,"general","match ipv6 address prefix-list "+ list_name)
+        reg.write(r,"general","match ipv6 address prefix-list "+ route_map_name)
         
         localpref = {"provider":100,"settlement-free peer":200,"customer":300}
         reg.write(r,"general","set local preference " + str(localpref["?"]))#?需要获得信息，连接的as的community
@@ -191,7 +207,23 @@ def create_route_map(r,list_name,seq_num,community_num,action,reg):
         reg.write(r,"general","!")
     
     elif "FILTER_COMMUNITY" in action:
-        reg.write(r,"general","route-map "+list_name+" permit "+str(seq_num))
-        reg.write(r,"general"," match community "+list_name)
+        reg.write(r,"general","route-map "+route_map_name+" permit "+str(seq_num))
+        reg.write(r,"general"," match community "+route_map_name)
         reg.write(r,"general","!")
-        reg.write(r,"general","route-map "+list_name+" deny "+str(seq_num+10))
+        reg.write(r,"general","route-map "+route_map_name+" deny "+str(seq_num+10))
+
+
+# def apply_policy(router,reg):#router as an object
+#     N = 5 # maximal number of as that the router can connect to
+#     taglst = []
+#     setlst = []
+#     filterlst = []
+#     for i in range(N):
+#         taglst.append("TAG_COMMUNITY"+str(i))
+#         setlst.append("SET_COMMUNITY"+str(i))
+#         filterlst.append("FILTER_COMMUNITY"+str(i))
+
+
+
+# reg.write(router.router_id,"general","ipv6 router rip "+str(process_id))
+#                 reg.write(router.router_id,"general"," redistribute connected")

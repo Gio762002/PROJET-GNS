@@ -3,12 +3,15 @@ class registrar(): #designed for routers and their interfaces
 
     def __init__(self):
         self.general_register = {}
+        self.log = {}
 
     def create_register(self, name):
         self.general_register[name] = {"general": [],"Loopback0":[]} #general: write commun Cisco commands for all interfaces
+        self.log[name] = {}
     
     def add_entry(self, name, entry): #put interface.name here as entry
         self.general_register[name][entry] = []
+        self.log[name][entry] = { "route_map_name": None}
 
     def write(self, name, entry, command):
         try:

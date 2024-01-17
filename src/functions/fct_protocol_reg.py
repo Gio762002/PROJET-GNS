@@ -1,7 +1,3 @@
-# from classes import class_reseau as classr
-# from classes import class_output as output
-# import fct_reseau as fctr
-
 """
 reg is a object of class output
 """
@@ -22,7 +18,9 @@ def as_enable_rip(As,reg):
                 interface.protocol_type = "RIP"
                 interface.protocol_process = process_id      
                 #Cisco: ipv6 rip process_id enable
-                reg.write(rt1,interface.name,"ipv6 rip "+str(process_id)+" enable")
+                reg.write(rt1, interface.name,"ipv6 rip "+str(process_id)+" enable")
+    for router in As.routers.values():
+        reg.write(router.router_id,"Loopback0","ipv6 rip "+str(process_id)+" enable")
 
 
 """
@@ -34,7 +32,7 @@ def as_enable_ospf(As,reg):
         for interface in router.interfaces.values(): #interface as an object
             if interface.protocol_type == "eBGP":             
                 # Cisco: ''passive-interface %interface_name
-                reg.write(router.router_id,interface.name," passive-interface "+interface.name)
+                reg.write(router.router_id, interface.name," passive-interface "+interface.name)
 
         for interface in router.interfaces.values():
             if interface.protocol_type == "RIP":
@@ -43,10 +41,12 @@ def as_enable_ospf(As,reg):
                 interface.protocol_type = "OSPF"
                 interface.protocol_process = process_id      
                 #Cisco: ipv6 ospf %process_id area %area_idd
-                reg.write(router.router_id,interface.name,"ipv6 ospf "+str(process_id)+" area "+str(router.position))
+                reg.write(router.router_id, interface.name,"ipv6 ospf "+str(process_id)+" area "+str(router.position))
+        reg.write(router.router_id,"Loopback0","ipv6 ospf "+str(process_id)+" area "+str(router.position))
 
-
-'''对所有AS中的所有ABR,标记ebgp端口,找到其连接的ASBR的信息 输出为一个字典{(as,router,ABR_interface):(as,router,ABR_interface)}'''            
+'''
+For all ABR in all as, mark their ebgp interface and find the info of its connected int. RETURN: {(as,router,ABR_interface):(as,router,ABR_interface)}
+'''            
 def generate_eBGP_neighbor_info(dict_as):
     neighbor_info = {}
     #this part generates a dict of all router objects, which to be used to get easily the router object by its id
@@ -66,8 +66,9 @@ def generate_eBGP_neighbor_info(dict_as):
                     neighbor_info[(dict_routers[r2].position,r2,int2)] = (dict_routers[r1].position,r1,int1)
     return neighbor_info
 
-
-'''对于一个ABR,找到其ebgp端口连接的ASBR的信息 输出为(as,router,ABR_interface)'''     
+'''
+For one particular ABR, find the info of its ebgp interface. RETURN: (as,router,ABR_interface)
+'''     
 def find_eBGP_neighbor_info(rt,int,neighbor_info): #int(str) = interface.name
     for key,value in neighbor_info.items():
         if key[1] == rt and key[2]==int:
@@ -100,9 +101,9 @@ def as_enable_BGP(dict_as, loopback_plan, neighbor_info, reg):
 
             for interface in router.interfaces.values(): #interface as an object
                 if interface.protocol_type == "eBGP":
-                    (rm_as,rt,ABR_interface) = find_eBGP_neighbor_info(router.router_id,interface.name,neighbor_info) 
+                    (rm_as,_,ABR_interface) = find_eBGP_neighbor_info(router.router_id,interface.name,neighbor_info) 
                     #Cisco: neighbor %interface.address_ipv6_global remote-as %neighbor_as_id
-                    reg.write(rt,"general"," neighbor "+ABR_interface+" remote-as "+str(rm_as))
+                    reg.write(router.router_id,"general"," neighbor "+ABR_interface+" remote-as "+str(rm_as))
             
             reg.write(router.router_id,"general","!")
             reg.write(router.router_id,"general","address-family ipv6")
@@ -115,10 +116,30 @@ def as_enable_BGP(dict_as, loopback_plan, neighbor_info, reg):
                 if interface.statu == "up":
                 
                 #Cisco: '' network %interface.address_ipv6_global /mask 
-                    reg.write(router.router_id,"general"," network "+str(interface.address_ipv6_global)+" "+str(interface.netmask))
+                    reg.write(router.router_id,"general"," network "+str(interface.address_ipv6_global)+str('/64'))
                 
                 
             #Cisco: '' exit-address-family
             #!
             reg.write(router.router_id,"general"," exit-address-family")
             reg.write(router.router_id,"general","!")
+
+
+def as_config_unused_interface_and_loopback0(dict_as,reg):
+    for As in dict_as.values():
+        for router in As.routers.values():
+            reg.write(router.router_id,"Loopback0","no ip address")
+            reg.write(router.router_id,"Loopback0","ipv6 address "+str(router.loopback))
+            reg.write(router.router_id,"Loopback0","ipv6 enable")
+            
+            for interface in router.interfaces.values():
+                if interface.statu == "down":
+                    #Cisco: interface %interface.name
+                    #'' no ipv6 address
+                    #'' shutdown
+                    #'' negotiation auto
+                    #'' !
+                    reg.write(router.router_id, interface.name, interface.name)
+                    reg.write(router.router_id, interface.name," no ipv6 address")
+                    reg.write(router.router_id, interface.name," shutdown")
+                    reg.write(router.router_id, interface.name," negotiation auto")

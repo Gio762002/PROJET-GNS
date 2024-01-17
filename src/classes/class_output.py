@@ -5,7 +5,7 @@ class registrar(): #designed for routers and their interfaces
         self.general_register = {}
 
     def create_register(self, name):
-        self.general_register[name] = {"general": []} #general: write commun Cisco commands for all interfaces
+        self.general_register[name] = {"general": [],"Loopback0":[]} #general: write commun Cisco commands for all interfaces
     
     def add_entry(self, name, entry): #put interface.name here as entry
         self.general_register[name][entry] = []
@@ -13,7 +13,10 @@ class registrar(): #designed for routers and their interfaces
     def write(self, name, entry, command):
         try:
             if name in self.general_register and entry in self.general_register[name]:
-                self.general_register[name][entry].append(command)
+                if entry != "general":
+                    self.general_register[name][entry].append(command)
+                else:
+                    self.general_register[name][entry].append(command)
             else:
                 print("Invalid name or entry")
         except Exception as e:
@@ -45,6 +48,8 @@ class registrar(): #designed for routers and their interfaces
                         for i in value:
                             f.write(i + "\n")
                     else:
-                        f.write(key + "\n")
+                        f.write("interface "+key + "\n")
                         for i in value:
-                            f.write("\t" + i + "\n")
+                            f.write(" " + i + "\n")
+                        f.write("!\n")
+        print("files generated successfully at output/")

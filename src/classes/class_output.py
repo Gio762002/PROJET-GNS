@@ -6,10 +6,19 @@ class registrar(): #designed for routers and their interfaces
         self.log = {}
 
     def create_register(self, name):
-        self.general_register[name] = {1:[],2:[],3:[],4:[],5:[],"Loopback0":[]} #general: write commun Cisco commands for all interfaces
+        self.general_register[name] = {1:[],2:[],3:[],4:[],5:[],"Loopback0":[]} 
         self.log[name] = {}
+        """
+        writing order:
+        # 0 : interface
+        # 1 : bgp
+        # 2 : community-list
+        # 3 : ospf/rip
+        # 4 : prefix-list
+        # 5 : route-map
+        """
     
-    def add_entry(self, name, entry): #put interface.name here as entry
+    def add_entry(self, name, entry): #put interface.name or writing order here as entry
         self.general_register[name][entry] = []
         self.log[name][entry] = { "route_map_name": None}
 
@@ -42,8 +51,8 @@ class registrar(): #designed for routers and their interfaces
             files[target] = "output/" + target + ".txt"
         
         for (target, file) in files.items():
-            if os.path.exists(file):  # Check if the file exists
-                os.remove(file)  # Delete the file
+            if os.path.exists(file): 
+                os.remove(file)
             
             with open(file, "w") as f:
                 for key, value in self.general_register[target].items():
@@ -60,11 +69,3 @@ class registrar(): #designed for routers and their interfaces
         print("files generated successfully at output/")
 
 
-        """
-        general order:
-        # 1 : bgp
-        # 2 : community-list
-        # 3 : ospf/rip
-        # 4 : prefix-list
-        # 5 : route-map
-        """

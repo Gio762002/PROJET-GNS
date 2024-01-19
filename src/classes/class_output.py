@@ -48,7 +48,7 @@ class registrar(): #designed for routers and their interfaces
     def save_as_txt(self):
         files = {}
         for target in self.general_register.keys():
-            files[target] = "output/" + target + ".txt"
+            files[target] = "output/i" + target[1:] + "_startup-config.cfg"
         
         for (target, file) in files.items():
             if os.path.exists(file): 
@@ -65,15 +65,15 @@ class registrar(): #designed for routers and their interfaces
                 for key, value in self.general_register[target].items():
                     if type(key) == int :
                         for i in value:
-                            f.write(" " + i + "\n")
-                        f.write("!\n")
+                            f.write( i + "\n")
+                        # f.write("!\n")
                 self.write_default(f,target,"end")
         print("files generated successfully at output/")
 
 
     def write_default(self,f,name,where):
         default_commands_beginning=[
-            "!",
+            "!", " ", "!",
             "upgrade fpd auto",
             "version 12.4",
             "service timestamps debug datetime msec",
@@ -92,6 +92,7 @@ class registrar(): #designed for routers and their interfaces
             "!","!","!","!",
             "no ip domain lookup",
             "ipv6 unicast-routing",
+            "multilink bundle-name authenticated",
             "!","!","!","!","!","!","!","!","!","!","!","!","!","!",
             "archive",
             " log config",

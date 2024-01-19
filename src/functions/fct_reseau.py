@@ -72,8 +72,8 @@ def as_auto_addressing_for_link(As,ip_range,dict_as): # ip_range = "2001:100::0"
             del link_dict_copy[(r2,i2)]
             if (r1,i1) in link_dict_copy.keys():
                 numero_link += 1
-                s_address = ip_range + str(As.as_id) + ":" + str(numero_link) + "::1"
-                b_address = ip_range + str(As.as_id) + ":" + str(numero_link) + "::2"
+                s_address = ip_range[:-1] + str(As.as_id) + ":" + str(numero_link) + "::1"
+                b_address = ip_range[:-1] + str(As.as_id) + ":" + str(numero_link) + "::2"
                 if r1 > r2:
                     addresses = (b_address,s_address)          
                 else:
@@ -87,7 +87,7 @@ def as_auto_addressing_for_link(As,ip_range,dict_as): # ip_range = "2001:100::0"
 
 def as_auto_loopback(AS,ip_range): # AS as an object
     for router_id,router in AS.routers.items():
-        router.loopback = ip_range + str(AS.as_id) + ":" + (str(router_id).split('.'))[0] + "::1/128"
+        router.loopback = ip_range[:-1] + str(AS.as_id) + ":" + (str(router_id).split('.'))[0] + "::1/128"
 
 
 def as_loopback_plan(AS): #AS as an object

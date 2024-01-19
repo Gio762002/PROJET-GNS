@@ -19,6 +19,9 @@ def local_link(router1,router2,interface1,interface2):#all objects
     interface2.connected_router = router1.router_id
     interface2.connected_interface = interface1.name
     router2.neighbors.append(router1.router_id)
+    if router1.position != router2.position:
+        interface1.egp_protocol_type = "eBGP"
+        interface2.egp_protocol_type = "eBGP"
 
 def reset_interface(router,int): # only one side
     router.all_interfaces[int] = 0

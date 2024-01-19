@@ -14,11 +14,12 @@ def as_enable_rip(As,reg):
         reg.write(router.name, order, " redistribute connected")
         
         for interface in router.interfaces.values():
-            if interface.protocol_type == "OSPF":
+            if interface.igp_protocol_type == "OSPF":
                 raise Exception("RIP and OSPF cannot be enabled at the same time")
-            if interface.statu == "up" and interface.protocol_type == None:
-                interface.protocol_type = "RIP"
+            if interface.statu == "up" and interface.igp_protocol_type == None:
+                interface.igp_protocol_type = "RIP"
                 interface.protocol_process = process_id      
+                reg.write(router.name, interface.name, "ipv6 enable")
                 reg.write(router.name, interface.name, "ipv6 rip " + str(process_id) + " enable")
         reg.write(router.name, "Loopback0", "ipv6 rip " + str(process_id) + " enable")
         
@@ -35,16 +36,17 @@ def as_enable_ospf(As,reg):
         reg.write(router.name, order, " router-id " + router.router_id)
         reg.write(router.name, order, " log-adjacency-changes")
         for interface in router.interfaces.values(): #interface as an object
-            if interface.protocol_type == "eBGP":             
+            if interface.egp_protocol_type == "eBGP":             
                 reg.write(router.name, order," passive-interface " + interface.name)
         reg.write(router.name, order, " !")
         
         for interface in router.interfaces.values():
-            if interface.protocol_type == "RIP":
+            if interface.igp_protocol_type == "RIP":
                 raise Exception("RIP and OSPF cannot be enabled at the same time")
             if interface.statu == "up":#and interface.protocol_type == None
-                interface.protocol_type = "OSPF"
+                interface.igp_protocol_type = "OSPF"
                 interface.protocol_process = process_id      
+                reg.write(router.name, interface.name, "ipv6 enable")
                 reg.write(router.name, interface.name, "ipv6 ospf " + str(process_id) + " area 0")
         reg.write(router.name, "Loopback0", "ipv6 ospf " + str(process_id) + " area 0")
 
@@ -64,9 +66,7 @@ def generate_eBGP_neighbor_info(dict_as):
     for As in dict_as.values():
         for (r1,int1),(r2,int2) in As.link_dict.items(): # same infomation will be viewed 4 times, a little bit waste
             if As.routers.get(r1) == None or As.routers.get(r2) == None: #means interconnection with other AS
-                if dict_routers[r1].interfaces.get(int1).protocol_type == None: # reduce the 4-time waste to 1-time waste ?
-                    dict_routers[r1].interfaces.get(int1).protocol_type = "eBGP"
-                    dict_routers[r2].interfaces.get(int2).protocol_type = "eBGP" #mark the interface as eBGP
+                if dict_routers[r1].position != dict_routers[r2].position: # reduce the 4-time waste to 1-time waste ?
                     
                     ABR_int_address1 = dict_routers[r1].interfaces.get(int1).address_ipv6_global
                     ABR_int_address2 = dict_routers[r2].interfaces.get(int2).address_ipv6_global
@@ -109,12 +109,17 @@ def as_enable_BGP(dict_as, loopback_plan, neighbor_info, reg,  apply_policy=Fals
                     reg.write(router.name, order, " neighbor " + str(loopback)[:-4] + " update-source loopback0")
 
             for interface in router.interfaces.values(): #interface as an object
-                if interface.protocol_type == "eBGP": #对于每个ebgp接口
+                if interface.egp_protocol_type == "eBGP": #对于每个ebgp接口
                     (rm_as,_,_,ABR_int_address) = find_eBGP_neighbor_info(router.router_id,interface.name,neighbor_info) 
                     reg.write(router.name, order, " neighbor " + ABR_int_address + " remote-as " + str(rm_as))
 
             reg.write(router.name, order, " !")
             reg.write(router.name, order, " address-family ipv6")
+            
+            for interface in router.interfaces.values(): #interface as an object
+                if interface.egp_protocol_type == "eBGP": #对于每个ebgp接口
+                    (rm_as,_,_,ABR_int_address) = find_eBGP_neighbor_info(router.router_id,interface.name,neighbor_info) 
+                    reg.write(router.name, order, "  neighbor " + ABR_int_address + " activate")
             
             for loopback in loopback_plan.values():
                 if loopback != router.loopback:
@@ -123,7 +128,7 @@ def as_enable_BGP(dict_as, loopback_plan, neighbor_info, reg,  apply_policy=Fals
                         reg.write(router.name, order, "  neighbor " + str(loopback)[:-4] + " send-community")           
         
             for interface in router.interfaces.values(): #对于每个ebgp接口
-                if apply_policy and interface.protocol_type == "eBGP":
+                if apply_policy and interface.egp_protocol_type == "eBGP":
                     reg.write(router.name, order, "  neighbor " + str(interface.address_ipv6_global) + " activate")
                     reg.write(router.name, order, "  neighbor " + str(interface.address_ipv6_global) + " route-map TAG_COMMUNITY in")
                     reg.write(router.name, order, "  neighbor " + str(interface.address_ipv6_global) + " route-map FILTER_COMMUNITY out")

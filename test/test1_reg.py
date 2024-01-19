@@ -110,8 +110,7 @@ fctr.as_auto_addressing_for_link(as2,"2001:300::",as_dict)#ok
 
     
 
-neighbor_info = fctp.generate_eBGP_neighbor_info(as_dict) #ok
-# print("@neighbor_info: ",neighbor_info)
+neighbor_info = fctp.generate_eBGP_neighbor_info(as_dict) #ok 
 
 fctp.as_config_interfaces(as_dict,reg)
 fctp.as_config_unused_interface_and_loopback0(as_dict,reg) 
@@ -122,9 +121,11 @@ fctp.as_enable_ospf(as2,reg) #ok
 
 # reg.display(reg.general_register)
 
-sh.show_as_router_status(as1)
+# sh.show_as_router_status(as1)
+sh.show_as_loopback_plan(as1)
+sh.show_as_loopback_plan(as2)
 sh.show_as_router_address(as1)
-sh.show_as_router_status(as2)
+# sh.show_as_router_status(as2)
 sh.show_as_router_address(as2)
 
 # print(fctp.find_eBGP_neighbor_info('4.4.4.4','GigabitEthernet1',neighbor_info)) #ok

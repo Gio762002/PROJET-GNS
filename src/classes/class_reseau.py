@@ -13,14 +13,15 @@ class router:
 
 class interface:
     
-    def __init__(self,name,protocol_type=None):
+    def __init__(self,name,igp_protocol_type=None):
         self.name = name # !!! can be the same with other interfaces of other routers
         self.statu = "down" # up or down
         self.address_ipv6_global = None
         self.netmask = None
         self.connected_router = None # router_id
         self.connected_interface = None # interface.name
-        self.protocol_type = protocol_type   
+        self.igp_protocol_type = igp_protocol_type
+        self.egp_protocol_type = None   
         self.protocol_process = None 
 
 class autonomous_system:

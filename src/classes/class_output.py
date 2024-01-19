@@ -92,6 +92,7 @@ class registrar(): #designed for routers and their interfaces
             "!","!","!","!",
             "no ip domain lookup",
             "ipv6 unicast-routing",
+            "!",
             "multilink bundle-name authenticated",
             "!","!","!","!","!","!","!","!","!","!","!","!","!","!",
             "archive",

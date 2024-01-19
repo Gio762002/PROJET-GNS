@@ -6,7 +6,8 @@ def show_as_router_status(As):
     print("AS",As.as_id,"router status: ")
     for router in As.routers.values():
         for interface in router.interfaces.values():
-            print(router.router_id,":",interface.name,':',interface.protocol_type, "@process:",interface.protocol_process)
+            print(router.router_id,":",interface.name,'"igp: ',interface.igp_protocol_type, "@process:",interface.protocol_process)
+            print(router.router_id,":",interface.name,'"egp: ',interface.egp_protocol_type)
         print("")
 
 def show_as_router_address(As):

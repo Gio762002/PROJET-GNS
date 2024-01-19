@@ -140,9 +140,10 @@ def as_enable_BGP(dict_as, loopback_plan, neighbor_info, reg,  apply_policy=Fals
                 #Cisco: '' network %interface.address_ipv6_global /mask 
                     reg.write(router.router_id, order,  " network " + str(interface.address_ipv6_global) + str('/64'))
             
-            reg.write(router.router_id, order, " redistribute connected route-map SET_COMMUNITY")
-            process = 1 if As.igp == "RIP" else 2
-            reg.write(router.router_id, order, " redistribute " + As.igp.lower() + " " + str(process) + " route-map SET_COMMUNITY")
+            if apply_policy: 
+                reg.write(router.router_id, order, " redistribute connected route-map SET_COMMUNITY")
+                process = 1 if As.igp == "RIP" else 2
+                reg.write(router.router_id, order, " redistribute " + As.igp.lower() + " " + str(process) + " route-map SET_COMMUNITY")
             #Cisco: '' exit-address-family
             reg.write(router.router_id, order, " exit-address-family")
             reg.write(router.router_id, order, "!")

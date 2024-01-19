@@ -1,19 +1,30 @@
-# PROJET-GNS  
+# PROJEcT-GNS  
 
-## Basic thoughts for how we are going to do  
+## What does this project do:   
 
-There's several python files that achieve the conversion form an intent file to Cisco command file. The passage of this conversion will be:  
+Automatically generate router configuration files in txt version in the folder ```output``` from a network intent file ```network_intent.json```.     
 
-**read intent -> have the overview of the topologie -> generate Cisco commands by order**  
+## How does it work?  
+There's several python files that achieve the conversion form an intent file to configuration files. The passage of this conversion is:  
+
+**read intent line by line -> build the overrall topologie by simulations -> generate configuration files in order**  
 
 ### python files needed :  
 
-**read intent** : ```read.py``` read from a json file(maybe).  
+**read intent** :  
+```read_network_intent.py``` reads from a json file(maybe).  
 
-**topologie overview** : ```class.py``` : define classes for router/as/protocol.  ```configure.py```: define all the fct that are usefull to build the topologie ex: add one router to an as.  
+**overall topologie** :  
+```class_reseau.py``` : defines classes for router/interface/as.  
+```fct_reseau.py```: defines all the fct that are usefull to build the topologie ex: add one router to an as.  
+```fct_protocol_reg.py```:    
 
-**generate commands**: ```commands.py```: contains all the commands that need to be sorted by order.  
+**generate outputs**:    
+```class_output.py```: defines the ```registrar``` class, that registrer Cisco commands from the right loop, and group the commands by router and interface.   
+```fct_protocol_reg```:  use ```reg``` as parametre 
 
-**principal programme** : ```main.py``` : use all objects(defined by classes), clear out the order of commands.  
+**principal programme** : ```main.py``` : use all objects(defined by classes), clear out the order of commands.    
 
-**the point that might be the most difficult: sort the order of commands**   
+#### other python files that help with testing:  
+```fct_show.py```  modular visualization functions.  
+```test.py```  

@@ -63,9 +63,9 @@ r5GigabitEthernet2 = classr.interface("GigabitEthernet2/0")
 for interface in [r5GigabitEthernet0,r5GigabitEthernet1,r5GigabitEthernet2]:
     fctr.init_interface(r5,interface)
     reg.add_entry(r5.name,interface.name)
-r6GigabitEthernet0 = classr.interface("GigabitEthernet0")
-r6GigabitEthernet1 = classr.interface("GigabitEthernet1")
-r6GigabitEthernet2 = classr.interface("GigabitEthernet2")
+r6GigabitEthernet0 = classr.interface("GigabitEthernet0/0")
+r6GigabitEthernet1 = classr.interface("GigabitEthernet1/0")
+r6GigabitEthernet2 = classr.interface("GigabitEthernet2/0")
 for interface in [r6GigabitEthernet0,r6GigabitEthernet1,r6GigabitEthernet2]:
     fctr.init_interface(r6,interface)
     reg.add_entry(r6.name,interface.name)

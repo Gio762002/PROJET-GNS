@@ -184,7 +184,6 @@ def as_config_unused_interface_and_loopback0(dict_as,reg):
                     #'' shutdown
                     #'' negotiation auto
                     #'' !
-                    reg.write(router.name, interface.name,  interface.name)
                     reg.write(router.name, interface.name, " no ipv6 address")
                     reg.write(router.name, interface.name, " shutdown")
                     reg.write(router.name, interface.name, " negotiation auto")

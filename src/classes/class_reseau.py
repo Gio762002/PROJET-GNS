@@ -1,7 +1,7 @@
 class router:
    
-    def __init__(self,type="Internal"):
-        #self.name = name
+    def __init__(self,name,type="Internal"):
+        self.name = name
         self.router_id = None
         self.loopback = None
         self.all_interfaces = {"Loopback0":1} #interface.name : occupied? (1 or 0)

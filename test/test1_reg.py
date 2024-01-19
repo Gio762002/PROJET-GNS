@@ -14,22 +14,22 @@ as2 = classr.autonomous_system(2,"RIP","provider",102)
 as_dict = {as1.as_id:as1,as2.as_id:as2} # as a global container of all objects
 
 #3 router in AS1                                                                                    
-r1 = classr.router()
+r1 = classr.router("r1")
 r1.router_id = "1.1.1.1"
-r2 = classr.router("ABR")
+r2 = classr.router("r2","ABR")
 r2.router_id = "2.2.2.2"
-r3 = classr.router("ABR")
+r3 = classr.router("r3","ABR")
 r3.router_id = "3.3.3.3"
 #3 router in AS2
-r4 = classr.router("ABR")
+r4 = classr.router("r4","ABR")
 r4.router_id = "4.4.4.4"
-r5 = classr.router("ABR")
+r5 = classr.router("r5","ABR")
 r5.router_id = "5.5.5.5"
-r6 = classr.router("Internal")
+r6 = classr.router("r6","Internal")
 r6.router_id = "6.6.6.6" 
 
 for router in [r1,r2,r3,r4,r5,r6]:
-    reg.create_register(router.router_id)
+    reg.create_register(router.name)
 # reg.display(reg.general_register)
 
 #init interfaces
@@ -38,37 +38,37 @@ r1eth1 = classr.interface("eth1")
 r1eth2 = classr.interface("eth2")
 for interface in [r1eth0,r1eth1,r1eth2]:
     fctr.init_interface(r1,interface)
-    reg.add_entry(r1.router_id,interface.name)
+    reg.add_entry(r1.name,interface.name)
 r2eth0 = classr.interface("eth0")
 r2eth1 = classr.interface("eth1")
 r2eth2 = classr.interface("eth2")
 for interface in [r2eth0,r2eth1,r2eth2]:
     fctr.init_interface(r2,interface)
-    reg.add_entry(r2.router_id,interface.name)
+    reg.add_entry(r2.name,interface.name)
 r3eth0 = classr.interface("eth0")
 r3eth1 = classr.interface("eth1")
 r3eth2 = classr.interface("eth2")
 for interface in [r3eth0,r3eth1,r3eth2]:
     fctr.init_interface(r3,interface)
-    reg.add_entry(r3.router_id,interface.name)
+    reg.add_entry(r3.name,interface.name)
 r4eth0 = classr.interface("eth0")
 r4eth1 = classr.interface("eth1")
 r4eth2 = classr.interface("eth2")
 for interface in [r4eth0,r4eth1,r4eth2]:
     fctr.init_interface(r4,interface)
-    reg.add_entry(r4.router_id,interface.name)
+    reg.add_entry(r4.name,interface.name)
 r5eth0 = classr.interface("eth0")
 r5eth1 = classr.interface("eth1")
 r5eth2 = classr.interface("eth2")
 for interface in [r5eth0,r5eth1,r5eth2]:
     fctr.init_interface(r5,interface)
-    reg.add_entry(r5.router_id,interface.name)
+    reg.add_entry(r5.name,interface.name)
 r6eth0 = classr.interface("eth0")
 r6eth1 = classr.interface("eth1")
 r6eth2 = classr.interface("eth2")
 for interface in [r6eth0,r6eth1,r6eth2]:
     fctr.init_interface(r6,interface)
-    reg.add_entry(r6.router_id,interface.name)
+    reg.add_entry(r6.name,interface.name)
 # reg.display(reg.general_register)
 
 for router in [r1,r2,r3]:

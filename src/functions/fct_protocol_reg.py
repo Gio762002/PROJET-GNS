@@ -87,7 +87,7 @@ def find_eBGP_neighbor_info(r,int,neighbor_info): #int(str) = interface.name
 """
 Implement the protocol BGP
 """
-def as_enable_BGP(dict_as, loopback_plan, neighbor_info, reg,  apply_policy=False):
+def as_enable_BGP(dict_as, neighbor_info, reg,  apply_policy=False):
     #加快运行速度：不是反复执行相同的boucle以保证指令顺序而是在输出列表里每条消息前加一个顺序指示符，并在最终的输出时排序
     # loopback_plan: result of distribute_loopback(dict_as)
     # neighbor_info: result of generate_eBGP_neighbor_info(dict_as)
@@ -103,7 +103,7 @@ def as_enable_BGP(dict_as, loopback_plan, neighbor_info, reg,  apply_policy=Fals
             reg.write(router.name, order, " no bgp default ipv4-unicast")
             reg.write(router.name, order, " bgp log-neighbor-changes")
 
-            for loopback in loopback_plan.values():
+            for loopback in As.loopback_plan.values():
                 if loopback != router.loopback:
                     reg.write(router.name, order, " neighbor " + str(loopback)[:-4] + " remote-as " + str(router.position)) 
                     reg.write(router.name, order, " neighbor " + str(loopback)[:-4] + " update-source loopback0")
@@ -121,7 +121,7 @@ def as_enable_BGP(dict_as, loopback_plan, neighbor_info, reg,  apply_policy=Fals
                     (rm_as,_,_,ABR_int_address) = find_eBGP_neighbor_info(router.router_id,interface.name,neighbor_info) 
                     reg.write(router.name, order, "  neighbor " + ABR_int_address + " activate")
             
-            for loopback in loopback_plan.values():
+            for loopback in As.loopback_plan.values():
                 if loopback != router.loopback:
                     reg.write(router.name, order, "  neighbor " + str(loopback)[:-4] + " activate") 
                     if apply_policy:

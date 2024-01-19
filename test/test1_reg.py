@@ -116,7 +116,7 @@ fctp.as_config_interfaces(as_dict,reg)
 fctp.as_config_unused_interface_and_loopback0(as_dict,reg) 
 fctp.as_enable_rip(as1,reg) #ok
 
-fctp.as_enable_BGP(as_dict,as1.loopback_plan,neighbor_info,reg) 
+fctp.as_enable_BGP(as_dict,neighbor_info,reg) 
 fctp.as_enable_ospf(as2,reg) #ok
 
 # reg.display(reg.general_register)

@@ -51,7 +51,8 @@ def as_enable_ospf(As,reg):
         reg.write(router.name, "Loopback0", "ipv6 ospf " + str(process_id) + " area 0")
 
 '''
-For all ABR in all as, mark their ebgp interface and find the info of its connected int. RETURN: {(as,router,ABR_interface,@int):(as,router,ABR_interface,@int)}
+For all ABR in all as, mark their ebgp interface and find the info of its connected int.
+RETURN: {(as,router,ABR_interface,@int):(as,router,ABR_interface,@int)}
 可能要得到连接路由器as的role
 '''            
 def generate_eBGP_neighbor_info(dict_as):
@@ -131,9 +132,10 @@ def as_enable_BGP(dict_as, neighbor_info, reg,  apply_policy=False):
                     reg.write(router.name, order, "  neighbor " + str(interface.address_ipv6_global) + " route-map FILTER_COMMUNITY out","g")
 
             if apply_policy: 
-                reg.write(router.name, order, " redistribute connected route-map SET_COMMUNITY")
+                reg.write(router.name, order, " redistribute connected route-map SET_COMMUNITY","i")
                 process = 1 if As.igp == "RIP" else 2
                 reg.write(router.name, order, " redistribute " + As.igp.lower() + " " + str(process) + " route-map SET_COMMUNITY","i")
+            
             reg.write(router.name, order, " exit-address-family","j")
             add_exlam("j")
             reg.write(router.name, order, "ip forward-protocol nd","j")
@@ -172,11 +174,6 @@ def as_config_unused_interface_and_loopback0(dict_as,reg):
             
             for interface in router.interfaces.values():
                 if interface.statu == "down":
-                    #Cisco: interface %interface.name
-                    #'' no ipv6 address
-                    #'' shutdown
-                    #'' negotiation auto
-                    #'' !
                     reg.write(router.name, interface.name, " no ipv6 address")
                     reg.write(router.name, interface.name, " shutdown")
                     reg.write(router.name, interface.name, " negotiation auto")

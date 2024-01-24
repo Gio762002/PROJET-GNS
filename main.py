@@ -52,7 +52,8 @@ for json_as in network_intent['AS']: # json_as is a dict
             fctr.init_interface(router_instance,interface_instance) # bind to router
             
             if json_interface['neighbor'] != '':
-                as_instance.link_dict[(router_instance.router_id, interface_instance.name)] = (json_interface['neighbor'], json_interface['neighbor_interface'])
+                neighbor_id = ((json_interface['neighbor'][1:]+".")*4)[:-1]
+                as_instance.link_dict[(router_instance.router_id, interface_instance.name)] = (neighbor_id, json_interface['neighbor_interface'])
             
 
             reg.add_entry(router_instance.name,interface_instance.name)
@@ -60,7 +61,12 @@ for json_as in network_intent['AS']: # json_as is a dict
     
     as_instance.auto_loopback()
     as_instance.generate_loopback_plan()
-    for As in as_dict.values():
-        print(As.link_dict)
-    # fctr.as_local_links(as_dict)
 
+# for As in as_dict.values():
+#     print("As",As.as_id,":",As.routers)
+fctr.as_local_links(as_dict)
+for As in as_dict.values():
+    for router in As.routers.values():
+        for interface in router.interfaces.values():
+            print(router.name,"#",interface.name," is ",interface.statu," connet to ",interface.connected_router," via ",interface.connected_interface)
+            print("protocol:",interface.igp_protocol_type," egp:",interface.egp_protocol_type,"running",interface.protocol_process)

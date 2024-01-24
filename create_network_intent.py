@@ -1,12 +1,15 @@
 import json
+import os
 
 network_intent_data = {
   "AS": [
     {
       "number": "1",
       "IP_range":"2001.127.100.0::/64",
-      "loopback_range":"100::/128",
-      "protocol":"RIP",
+      "loopback_range":"2001:100::",
+      "protocol":"OSPF",
+      "community": "customer",
+      "community_number": "101",
       "routers": [
         {
           "name": "R1",
@@ -19,17 +22,17 @@ network_intent_data = {
               "neighbor_interface": "0"      
             },
             {
-              "name": "GigabitEthernet0/1",
+              "name": "GigabitEthernet1/0",
               "neighbor": "R2",
-              "neighbor_interface": "GigabitEthernet0/1"      
+              "neighbor_interface": "GigabitEthernet1/0"      
             },
             {
-              "name": "GigabitEthernet0/2",
+              "name": "GigabitEthernet2/0",
               "neighbor": "R3",
-              "neighbor_interface": "GigabitEthernet0/2"      
+              "neighbor_interface": "GigabitEthernet2/0"      
             },
             {
-              "name": "GigabitEthernet0/3",
+              "name": "GigabitEthernet3/0",
               "neighbor": "0",
               "neighbor_interface": "0"      
             },                      
@@ -47,19 +50,19 @@ network_intent_data = {
               "neighbor_interface": "GigabitEthernet0/0"      
             },
             {
-              "name": "GigabitEthernet0/1",
+              "name": "GigabitEthernet1/0",
               "neighbor": "R1",
-              "neighbor_interface": "GigabitEthernet0/1"      
+              "neighbor_interface": "GigabitEthernet1/0"      
             },
             {
-              "name": "GigabitEthernet0/2",
+              "name": "GigabitEthernet2/0",
               "neighbor": "0",
               "neighbor_interface": "0"      
             },
             {
-              "name": "GigabitEthernet0/3",
+              "name": "GigabitEthernet3/0",
               "neighbor": "R3",
-              "neighbor_interface": "GigabitEthernet0/3"      
+              "neighbor_interface": "GigabitEthernet3/0"      
             },                      
           ],
         },
@@ -75,19 +78,19 @@ network_intent_data = {
               "neighbor_interface": "GigabitEthernet0/0"      
             },
             {
-              "name": "GigabitEthernet0/1",
+              "name": "GigabitEthernet1/0",
               "neighbor": "0",
               "neighbor_interface": "0"      
             },
             {
-              "name": "GigabitEthernet0/2",
+              "name": "GigabitEthernet2/0",
               "neighbor": "R1",
-              "neighbor_interface": "GigabitEthernet0/2"      
+              "neighbor_interface": "GigabitEthernet2/0"      
             },
             {
-              "name": "GigabitEthernet0/3",
+              "name": "GigabitEthernet3/0",
               "neighbor": "R2",
-              "neighbor_interface": "GigabitEthernet0/3"      
+              "neighbor_interface": "GigabitEthernet3/0"      
             },                      
           ],
         },
@@ -103,19 +106,19 @@ network_intent_data = {
               "neighbor_interface": "GigabitEthernet0/0"      
             },
             {
-              "name": "GigabitEthernet0/1",
+              "name": "GigabitEthernet1/0",
               "neighbor": "R6",
-              "neighbor_interface": "GigabitEthernet0/1"      
+              "neighbor_interface": "GigabitEthernet1/0"      
             },
             {
-              "name": "GigabitEthernet0/2",
+              "name": "GigabitEthernet2/0",
               "neighbor": "R7",
-              "neighbor_interface": "GigabitEthernet0/2"      
+              "neighbor_interface": "GigabitEthernet2/0"      
             },
             {
-              "name": "GigabitEthernet0/3",
+              "name": "GigabitEthernet3/0",
               "neighbor": "R5",
-              "neighbor_interface": "GigabitEthernet0/3"      
+              "neighbor_interface": "GigabitEthernet3/0"      
             },                      
           ],
         },
@@ -131,19 +134,19 @@ network_intent_data = {
               "neighbor_interface": "GigabitEthernet0/0"      
             },
             {
-              "name": "GigabitEthernet0/1",
+              "name": "GigabitEthernet1/0",
               "neighbor": "R7",
-              "neighbor_interface": "GigabitEthernet0/1"      
+              "neighbor_interface": "GigabitEthernet1/0"      
             },
             {
-              "name": "GigabitEthernet0/2",
+              "name": "GigabitEthernet2/0",
               "neighbor": "R6",
-              "neighbor_interface": "GigabitEthernet0/2"      
+              "neighbor_interface": "GigabitEthernet2/0"      
             },
             {
-              "name": "GigabitEthernet0/3",
+              "name": "GigabitEthernet3/0",
               "neighbor": "R4",
-              "neighbor_interface": "GigabitEthernet0/3"      
+              "neighbor_interface": "GigabitEthernet3/0"      
             },                      
           ],
         },
@@ -159,17 +162,17 @@ network_intent_data = {
               "neighbor_interface": "GigabitEthernet0/0"      
             },
             {
-              "name": "GigabitEthernet0/1",
+              "name": "GigabitEthernet1/0",
               "neighbor": "R4",
-              "neighbor_interface": "GigabitEthernet0/1"      
+              "neighbor_interface": "GigabitEthernet1/0"      
             },
             {
-              "name": "GigabitEthernet0/2",
+              "name": "GigabitEthernet2/0",
               "neighbor": "R5",
-              "neighbor_interface": "GigabitEthernet0/2"      
+              "neighbor_interface": "GigabitEthernet2/0"      
             },
             {
-              "name": "GigabitEthernet0/3",
+              "name": "GigabitEthernet3/0",
               "neighbor": "0",
               "neighbor_interface": "0"      
             },                      
@@ -187,17 +190,17 @@ network_intent_data = {
               "neighbor_interface": "GigabitEthernet0/0"      
             },
             {
-              "name": "GigabitEthernet0/1",
+              "name": "GigabitEthernet1/0",
               "neighbor": "R5",
-              "neighbor_interface": "GigabitEthernet0/1"      
+              "neighbor_interface": "GigabitEthernet1/0"      
             },
             {
-              "name": "GigabitEthernet0/2",
+              "name": "GigabitEthernet2/0",
               "neighbor": "R4",
-              "neighbor_interface": "GigabitEthernet0/2"      
+              "neighbor_interface": "GigabitEthernet2/0"      
             },
             {
-              "name": "GigabitEthernet0/3",
+              "name": "GigabitEthernet3/0",
               "neighbor": "0",
               "neighbor_interface": "0"      
             },                      
@@ -209,8 +212,10 @@ network_intent_data = {
     {
       "number": "2",
       "IP_range":"2001.127.200.0::/64",
-      "loopback_range":"200::/128",
-      "protocol":"OSPF",
+      "loopback_range":"2001:200::",
+      "protocol":"RIP",
+      "community": "provider",
+      "community_number": "102",
       "routers": [
         {
           "name": "R8",
@@ -223,17 +228,17 @@ network_intent_data = {
               "neighbor_interface": "GigabitEthernet0/0"      
             },
             {
-              "name": "GigabitEthernet0/1",
+              "name": "GigabitEthernet1/0",
               "neighbor": "R10",
-              "neighbor_interface": "GigabitEthernet0/1"      
+              "neighbor_interface": "GigabitEthernet1/0"      
             },
             {
-              "name": "GigabitEthernet0/2",
+              "name": "GigabitEthernet2/0",
               "neighbor": "R11",
-              "neighbor_interface": "GigabitEthernet0/2"      
+              "neighbor_interface": "GigabitEthernet2/0"      
             },
             {
-              "name": "GigabitEthernet0/3",
+              "name": "GigabitEthernet3/0",
               "neighbor": "0",
               "neighbor_interface": "0"      
             },                      
@@ -251,17 +256,17 @@ network_intent_data = {
               "neighbor_interface": "GigabitEthernet0/0"      
             },
             {
-              "name": "GigabitEthernet0/1",
+              "name": "GigabitEthernet1/0",
               "neighbor": "R11",
-              "neighbor_interface": "GigabitEthernet0/1"      
+              "neighbor_interface": "GigabitEthernet1/0"      
             },
             {
-              "name": "GigabitEthernet0/2",
+              "name": "GigabitEthernet2/0",
               "neighbor": "R10",
-              "neighbor_interface": "GigabitEthernet0/2"      
+              "neighbor_interface": "GigabitEthernet2/0"      
             },
             {
-              "name": "GigabitEthernet0/3",
+              "name": "GigabitEthernet3/0",
               "neighbor": "0",
               "neighbor_interface": "0"      
             },                      
@@ -279,19 +284,19 @@ network_intent_data = {
               "neighbor_interface": "GigabitEthernet0/0"      
             },
             {
-              "name": "GigabitEthernet0/1",
+              "name": "GigabitEthernet1/0",
               "neighbor": "R8",
-              "neighbor_interface": "GigabitEthernet0/1"      
+              "neighbor_interface": "GigabitEthernet1/0"      
             },
             {
-              "name": "GigabitEthernet0/2",
+              "name": "GigabitEthernet2/0",
               "neighbor": "R9",
-              "neighbor_interface": "GigabitEthernet0/2"      
+              "neighbor_interface": "GigabitEthernet2/0"      
             },
             {
-              "name": "GigabitEthernet0/3",
+              "name": "GigabitEthernet3/0",
               "neighbor": "R11",
-              "neighbor_interface": "GigabitEthernet0/3"      
+              "neighbor_interface": "GigabitEthernet3/0"      
             },                      
           ],
         },
@@ -307,19 +312,19 @@ network_intent_data = {
               "neighbor_interface": "GigabitEthernet0/0"      
             },
             {
-              "name": "GigabitEthernet0/1",
+              "name": "GigabitEthernet1/0",
               "neighbor": "R9",
-              "neighbor_interface": "GigabitEthernet0/1"      
+              "neighbor_interface": "GigabitEthernet1/0"      
             },
             {
-              "name": "GigabitEthernet0/2",
+              "name": "GigabitEthernet2/0",
               "neighbor": "R8",
-              "neighbor_interface": "GigabitEthernet0/2"      
+              "neighbor_interface": "GigabitEthernet2/0"      
             },
             {
-              "name": "GigabitEthernet0/3",
+              "name": "GigabitEthernet3/0",
               "neighbor": "R10",
-              "neighbor_interface": "GigabitEthernet0/3"      
+              "neighbor_interface": "GigabitEthernet3/0"      
             },                      
           ],
         },
@@ -335,19 +340,19 @@ network_intent_data = {
               "neighbor_interface": "GigabitEthernet0/0"      
             },
             {
-              "name": "GigabitEthernet0/1",
+              "name": "GigabitEthernet1/0",
               "neighbor": "R14",
-              "neighbor_interface": "GigabitEthernet0/1"      
+              "neighbor_interface": "GigabitEthernet1/0"      
             },
             {
-              "name": "GigabitEthernet0/2",
+              "name": "GigabitEthernet2/0",
               "neighbor": "0",
               "neighbor_interface": "0"      
             },
             {
-              "name": "GigabitEthernet0/3",
+              "name": "GigabitEthernet3/0",
               "neighbor": "R13",
-              "neighbor_interface": "GigabitEthernet0/3"      
+              "neighbor_interface": "GigabitEthernet3/0"      
             },                      
           ],
         },
@@ -363,19 +368,19 @@ network_intent_data = {
               "neighbor_interface": "GigabitEthernet0/0"      
             },
             {
-              "name": "GigabitEthernet0/1",
+              "name": "GigabitEthernet1/0",
               "neighbor": "0",
               "neighbor_interface": "0"      
             },
             {
-              "name": "GigabitEthernet0/2",
+              "name": "GigabitEthernet2/0",
               "neighbor": "R14",
-              "neighbor_interface": "GigabitEthernet0/2"      
+              "neighbor_interface": "GigabitEthernet2/0"      
             },
             {
-              "name": "GigabitEthernet0/3",
+              "name": "GigabitEthernet3/0",
               "neighbor": "R12",
-              "neighbor_interface": "GigabitEthernet0/3"      
+              "neighbor_interface": "GigabitEthernet3/0"      
             },                      
           ],
         },
@@ -391,17 +396,17 @@ network_intent_data = {
               "neighbor_interface": "0"      
             },
             {
-              "name": "GigabitEthernet0/1",
+              "name": "GigabitEthernet1/0",
               "neighbor": "R12",
-              "neighbor_interface": "GigabitEthernet0/1"      
+              "neighbor_interface": "GigabitEthernet1/0"      
             },
             {
-              "name": "GigabitEthernet0/2",
+              "name": "GigabitEthernet2/0",
               "neighbor": "R13",
-              "neighbor_interface": "GigabitEthernet0/2"      
+              "neighbor_interface": "GigabitEthernet2/0"      
             },
             {
-              "name": "GigabitEthernet0/3",
+              "name": "GigabitEthernet3/0",
               "neighbor": "0",
               "neighbor_interface": "0"      
             },                      
@@ -412,7 +417,9 @@ network_intent_data = {
   ]
 }
 
-file_path = 'network_intent.json'
-
+file_path = '/network_intent_data.json'
+if os.path.exists(file_path): 
+    os.remove(file_path)
 with open(file_path, 'w') as file:
     json.dump(network_intent_data, file, indent=4)
+

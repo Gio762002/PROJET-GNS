@@ -8,7 +8,7 @@ Implement the protocol RIP
 """
 def as_enable_rip(As,reg):  
     process_id = 1 
-    order = 3
+    order = 2
     for router in As.routers.values():
         reg.write(router.name, order, "ipv6 router rip "+str(process_id))
         reg.write(router.name, order, " redistribute connected")
@@ -30,7 +30,7 @@ Implement the protocol OSPF
 """
 def as_enable_ospf(As,reg):
     process_id = 2 #different from RIP
-    order = 3
+    order = 2
     for router in As.routers.values():
         reg.write(router.name, order, "ipv6 router ospf " + str(process_id))
         reg.write(router.name, order, " router-id " + router.router_id)
@@ -132,26 +132,27 @@ def as_enable_BGP(dict_as, neighbor_info, reg,  apply_policy=False):
                     reg.write(router.name, order, "  neighbor " + str(interface.address_ipv6_global) + " route-map FILTER_COMMUNITY out","g")
 
             if apply_policy: 
-                reg.write(router.name, order, " redistribute connected route-map SET_COMMUNITY","i")
+                reg.write(router.name, order, "  redistribute connected route-map SET_COMMUNITY","i")
                 process = 1 if As.igp == "RIP" else 2
-                reg.write(router.name, order, " redistribute " + As.igp.lower() + " " + str(process) + " route-map SET_COMMUNITY","i")
+                reg.write(router.name, order, "  redistribute " + As.igp.lower() + " " + str(process) + " route-map SET_COMMUNITY","i")
             
             reg.write(router.name, order, " exit-address-family","j")
             add_exlam("j")
             reg.write(router.name, order, "ip forward-protocol nd","j")
             reg.write(router.name, order, "no ip http server","j")
             reg.write(router.name, order, "no ip http secure-server","j")
-            add_exlam("j"), add_exlam("j"), add_exlam("j")
-            reg.write(router.name, order, "logging alarm informational","j")
-            reg.write(router.name, order, "no cdp log mismatch duplex","j")
+            add_exlam("j") #"k" is waiting for "ip community-list standard "
+            add_exlam("l")
+            reg.write(router.name, order, "logging alarm informational","l")
+            reg.write(router.name, order, "no cdp log mismatch duplex","l")
 
             if As.igp == "OSPF":
-                reg.write(router.name, order, "ipv6 router ospf 2","j")
-                reg.write(router.name, order, " router-id " + router.router_id,"j")
-                reg.write(router.name, order, " log-adjacency-changes","j")
+                reg.write(router.name, order, "ipv6 router ospf 2","l")
+                reg.write(router.name, order, " router-id " + router.router_id,"l")
+                reg.write(router.name, order, " log-adjacency-changes","l")
             elif As.igp == "RIP":
-                reg.write(router.name, order, "ipv6 router rip 1","j")
-                reg.write(router.name, order, " redistribute connected","j")
+                reg.write(router.name, order, "ipv6 router rip 1","l")
+                reg.write(router.name, order, " redistribute connected","l")
 
 '''
 functions related to output
@@ -182,48 +183,31 @@ def as_config_unused_interface_and_loopback0(dict_as,reg):
 """
 functions related to rooting policies
 """
-def create_community_list(r, int, route_map_name, community_num, reg): #route_map_name: str
-    order = 2
-    reg.write(r, order, "ip community-list standard " + route_map_name + " permit " + str(community_num))
-    reg.log[r][int]["route_map_name"] = route_map_name
-
-def create_prefix_list(r, int, route_map_name, seq_num, reg):
-    order = 4
-    reg.write(r, order, "ip prefix-list "+route_map_name + " seq " + seq_num + " permit ::/0 le 128")
-    reg.log[r][int]["route_map_name"] = route_map_name
-
-def create_route_map(r, route_map_name, seq_num, community_num, action, reg):
-    order = 5
-    if  "TAG_COMMUNITY" in action:
-        reg.write(r, order, "route-map " + action + " permit " + seq_num)
-        reg.write(r, order, "match ipv6 address prefix-list " + route_map_name)
+def tag_community(r, list_name, route_map, community_num, community, reg):
+    reg.write(r, 3, "!")
+    reg.write(r, 3, "!")
+    reg.write(r, 3, "ip prefix-list "+ list_name + " seq " + str(10) + " permit ::/0 le 128")
+    reg.write(r, 3, "!")
+    reg.write(r, 3, "!")
+    reg.write(r, 4, "route-map " + route_map + " permit " + str(10))
+    reg.write(r, 4, " match ipv6 address prefix-list " + list_name)
         
-        localpref = {"provider":100, "settlement-free peer":200, "customer":300}
-        reg.write(r, order, "set local preference " + str(localpref["?"]))#?需要获得信息，连接的as的community
-        reg.write(r, order, "set community " + str(community_num) + " additive")
+    localpref = {"provider":100, "settlement-free peer":200, "customer":300}
+    reg.write(r, 4, " set local preference " + str(localpref[community]))
+    reg.write(r, 4, " set community " + str(community_num) + " additive")
 
-    elif "SET_COMMUNITY" in action:
-        reg.write(r, order, "route-map " + action + " permit " + str(seq_num))
-        reg.write(r, order, "set community " + str(community_num) + " additive")
-        reg.write(r, order, "!")
-    
-    elif "FILTER_COMMUNITY" in action:
-        reg.write(r, order, "route-map " + route_map_name + " permit " + str(seq_num))
-        reg.write(r, order, " match community " + route_map_name)
-        reg.write(r, order, "!")
-        reg.write(r, order, "route-map " + route_map_name + " deny " + str(seq_num+10))
+def set_community(r, route_map, community_num, reg):
+    reg.write(r, 4, "!")
+    reg.write(r, 4, "!")
+    reg.write(r, 4, "route-map " + route_map + " permit " + str(10))
+    reg.write(r, 4, "set community " + str(community_num) + " additive")
+    reg.write(r, 4, "!")
 
-
-# def apply_policy(router,reg):#router as an object
-#     N = 5 # maximal number of as that the router can connect to
-#     taglst = []
-#     setlst = []
-#     filterlst = []
-#     for i in range(N):
-#         taglst.append("TAG_COMMUNITY"+str(i))
-#         setlst.append("SET_COMMUNITY"+str(i))
-#         filterlst.append("FILTER_COMMUNITY"+str(i))
-
-
-
-
+def filter_community(r, list_name, community_num, reg):
+    reg.write(r, 1, "ip community-list standard " + list_name + " permit " + str(community_num),"k")
+    reg.write(r, 4, "!")
+    reg.write(r, 4, "!")
+    reg.write(r, 4, "route-map " + list_name + " permit " + str(10))
+    reg.write(r, 4, " match community " + list_name)
+    reg.write(r, 4, "!")
+    reg.write(r, 4, "route-map " + list_name + " deny " + str(20))

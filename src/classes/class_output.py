@@ -7,7 +7,7 @@ class registrar(): #designed for routers and their interfaces
 
     def create_register(self, name):
         self.general_register[name] = {0:[],
-                                       1:{"a":[],"b":[],"c":[],"c":[],"d":[],"e":[],"f":[],"g":[],"h":[],"i":[],"j":[]},
+                                       1:{"a":[],"b":[],"c":[],"c":[],"d":[],"e":[],"f":[],"g":[],"h":[],"i":[],"j":[],"k":[],"l":[]},
                                        2:[],
                                        3:[],
                                        4:[],
@@ -18,10 +18,9 @@ class registrar(): #designed for routers and their interfaces
         writing order:
         # 0 : default
         # 1 : bgp (but specific inside by caracters)
-        # 2 : community-list
-        # 3 : ospf/rip
-        # 4 : prefix-list
-        # 5 : route-map
+        # 2 : ospf/rip
+        # 3 : prefix-list
+        # 4 : route-map
         """
     
     def add_entry(self, name, entry): #put interface.name or writing order here as entry

@@ -115,10 +115,15 @@ neighbor_info = fctp.generate_eBGP_neighbor_info(as_dict) #ok
 
 fctp.as_config_interfaces(as_dict,reg)
 fctp.as_config_unused_interface_and_loopback0(as_dict,reg) 
-fctp.as_enable_rip(as1,reg) #ok
 
-fctp.as_enable_BGP(as_dict,neighbor_info,reg) 
+fctp.set_community("r2", "SET_COMMUNITY", "101", reg)
+fctp.filter_community("r3", "FILTER_COMMUNITY", "101", reg)
+fctp.tag_community("r4", "LISTNAME", "TAG_COMMUNITY", "102","provider", reg)
+
+fctp.as_enable_rip(as1,reg) #ok
+fctp.as_enable_BGP(as_dict,neighbor_info,reg,True) 
 fctp.as_enable_ospf(as2,reg) #ok
+
 
 # reg.display(reg.general_register)
 

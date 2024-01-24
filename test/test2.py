@@ -80,7 +80,7 @@ for as_system in network_intent['AS']:
             fctr.init_interface(router_dic[router_name], router_interface_dic[interface_name])
             reg.add_entry(router_dic[router_name].name, router_interface_dic[interface_name].name)
 
-            if interface['neighbor'] != '0':
+            if interface['neighbor'] != '':
                 link = []
                 link.append(router_name)
                 link.append(interface['neighbor'])
@@ -138,11 +138,11 @@ for AS in as_dict.values():
 
 
 # sh.show_as_router_status(as_dict["as1"])
-sh.show_as_loopback_plan(as_dict["as1"])
-sh.show_as_loopback_plan(as_dict["as2"])
-sh.show_as_router_address(as_dict["as1"])
+# sh.show_as_loopback_plan(as_dict["as1"])
+# sh.show_as_loopback_plan(as_dict["as2"])
+# sh.show_as_router_address(as_dict["as1"])
 # sh.show_as_router_status(as_dict["as2"])
-sh.show_as_router_address(as_dict["as2"])
+# sh.show_as_router_address(as_dict["as2"])
 
 # print_dict_contents(as_dict)
 # print_dict_contents(router_dic)
@@ -150,6 +150,6 @@ sh.show_as_router_address(as_dict["as2"])
 # print_dict_contents(link_dict)
     
 
-
+reg.display(reg.general_register)
 
 reg.save_as_txt()

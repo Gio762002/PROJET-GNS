@@ -6,12 +6,18 @@ class registrar(): #designed for routers and their interfaces
         self.log = {}
 
     def create_register(self, name):
-        self.general_register[name] = {0:[],1:[],2:[],3:[],4:[],5:[],"Loopback0":[]} 
+        self.general_register[name] = {0:[],
+                                       1:{"a":[],"b":[],"c":[],"c":[],"d":[],"e":[],"f":[],"g":[],"h":[],"i":[],"j":[]},
+                                       2:[],
+                                       3:[],
+                                       4:[],
+                                       5:[],
+                                       "Loopback0":[]} 
         self.log[name] = {}
         """
         writing order:
         # 0 : default
-        # 1 : bgp
+        # 1 : bgp (but specific inside by caracters)
         # 2 : community-list
         # 3 : ospf/rip
         # 4 : prefix-list
@@ -22,11 +28,11 @@ class registrar(): #designed for routers and their interfaces
         self.general_register[name][entry] = []
         self.log[name][entry] = { "route_map_name": None}
 
-    def write(self, name, entry, command):
+    def write(self, name, entry, command,second=None):
         try:
             if name in self.general_register and entry in self.general_register[name]:
-                if type(entry)!=int:
-                    self.general_register[name][entry].append(command)
+                if second != None:
+                    self.general_register[name][entry][second].append(command)
                 else:
                     self.general_register[name][entry].append(command)
             else:
@@ -64,9 +70,14 @@ class registrar(): #designed for routers and their interfaces
                         f.write("!\n")
                 for key, value in self.general_register[target].items():
                     if type(key) == int :
-                        for i in value:
-                            f.write( i + "\n")
-                        # f.write("!\n")
+                        if isinstance(value, dict):#designed for bgp
+                            for second in value.values():
+                                for i in second:
+                                    f.write(i + "\n")
+                        else:
+                            for i in value:
+                                f.write( i + "\n")
+                        
                 self.write_default(f,target,"end")
         print("files generated successfully at output/")
 

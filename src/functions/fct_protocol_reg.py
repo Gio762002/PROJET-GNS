@@ -92,71 +92,64 @@ def as_enable_BGP(dict_as, neighbor_info, reg,  apply_policy=False):
     # loopback_plan: result of distribute_loopback(dict_as)
     # neighbor_info: result of generate_eBGP_neighbor_info(dict_as)
     order = 1
-    
+    # "a","b","c" etc mean the secondary order of writing
     for As in dict_as.values():
         for router in As.routers.values(): #router as an object
-            def add_exlam():
-                return reg.write(router.name, order, "!")
+            def add_exlam(second=None):
+                if second == None:
+                    return reg.write(router.name, order, "!")
+                else:
+                    return reg.write(router.name, order, "!",second)
         
-            reg.write(router.name, order, "router bgp " + str(As.as_id))
-            reg.write(router.name, order, " bgp router-id " + router.router_id)
-            reg.write(router.name, order, " no bgp default ipv4-unicast")
-            reg.write(router.name, order, " bgp log-neighbor-changes")
+            reg.write(router.name, order, "router bgp " + str(As.as_id),"a")
+            reg.write(router.name, order, " bgp router-id " + router.router_id,"a")
+            reg.write(router.name, order, " no bgp default ipv4-unicast","a")
+            reg.write(router.name, order, " bgp log-neighbor-changes","a")
+            reg.write(router.name, order, " !","d")
+            reg.write(router.name, order, " address-family ipv6","d")
 
             for loopback in As.loopback_plan.values():
                 if loopback != router.loopback:
-                    reg.write(router.name, order, " neighbor " + str(loopback)[:-4] + " remote-as " + str(router.position)) 
-                    reg.write(router.name, order, " neighbor " + str(loopback)[:-4] + " update-source loopback0")
+                    reg.write(router.name, order, " neighbor " + str(loopback)[:-4] + " remote-as " + str(router.position),"b") 
+                    reg.write(router.name, order, " neighbor " + str(loopback)[:-4] + " update-source loopback0","b")
 
-            for interface in router.interfaces.values(): #interface as an object
-                if interface.egp_protocol_type == "eBGP": #对于每个ebgp接口
-                    (rm_as,_,_,ABR_int_address) = find_eBGP_neighbor_info(router.router_id,interface.name,neighbor_info) 
-                    reg.write(router.name, order, " neighbor " + ABR_int_address + " remote-as " + str(rm_as))
-
-            reg.write(router.name, order, " !")
-            reg.write(router.name, order, " address-family ipv6")
-            
-            for interface in router.interfaces.values(): #interface as an object
-                if interface.egp_protocol_type == "eBGP": #对于每个ebgp接口
-                    (rm_as,_,_,ABR_int_address) = find_eBGP_neighbor_info(router.router_id,interface.name,neighbor_info) 
-                    reg.write(router.name, order, "  neighbor " + ABR_int_address + " activate")
-            
-            for loopback in As.loopback_plan.values():
-                if loopback != router.loopback:
-                    reg.write(router.name, order, "  neighbor " + str(loopback)[:-4] + " activate") 
+                    reg.write(router.name, order, "  neighbor " + str(loopback)[:-4] + " activate","f") 
                     if apply_policy:
-                        reg.write(router.name, order, "  neighbor " + str(loopback)[:-4] + " send-community")           
-        
-            for interface in router.interfaces.values(): #对于每个ebgp接口
-                if apply_policy and interface.egp_protocol_type == "eBGP":
-                    reg.write(router.name, order, "  neighbor " + str(interface.address_ipv6_global) + " activate")
-                    reg.write(router.name, order, "  neighbor " + str(interface.address_ipv6_global) + " route-map TAG_COMMUNITY in")
-                    reg.write(router.name, order, "  neighbor " + str(interface.address_ipv6_global) + " route-map FILTER_COMMUNITY out")
-                    # 单独写
-            for interface in router.interfaces.values(): #对于每个启用的接口  
-                if interface.statu == "up": 
-                    reg.write(router.name, order,  "  network " + str(interface.address_ipv6_global) + str('/64'))
+                        reg.write(router.name, order, "  neighbor " + str(loopback)[:-4] + " send-community","f")                      
             
+            for interface in router.interfaces.values(): #interface as an object
+                if interface.egp_protocol_type == "eBGP":
+                    (rm_as,_,_,ABR_int_address) = find_eBGP_neighbor_info(router.router_id,interface.name,neighbor_info) 
+                    reg.write(router.name, order, " neighbor " + ABR_int_address + " remote-as " + str(rm_as),"c")
+                    reg.write(router.name, order, "  neighbor " + ABR_int_address + " activate","e")
+                if interface.statu == "up": 
+                    reg.write(router.name, order,  "  network " + str(interface.address_ipv6_global) + str('/64'),"h")
+                
+                if apply_policy and interface.egp_protocol_type == "eBGP":
+                    reg.write(router.name, order, "  neighbor " + str(interface.address_ipv6_global) + " activate","g")
+                    reg.write(router.name, order, "  neighbor " + str(interface.address_ipv6_global) + " route-map TAG_COMMUNITY in","g")
+                    reg.write(router.name, order, "  neighbor " + str(interface.address_ipv6_global) + " route-map FILTER_COMMUNITY out","g")
+
             if apply_policy: 
                 reg.write(router.name, order, " redistribute connected route-map SET_COMMUNITY")
                 process = 1 if As.igp == "RIP" else 2
-                reg.write(router.name, order, " redistribute " + As.igp.lower() + " " + str(process) + " route-map SET_COMMUNITY")
-            reg.write(router.name, order, " exit-address-family")
-            add_exlam()
-            reg.write(router.name, order, "ip forward-protocol nd")
-            reg.write(router.name, order, "no ip http server")
-            reg.write(router.name, order, "no ip http secure-server")
-            add_exlam(), add_exlam(), add_exlam()
-            reg.write(router.name, order, "logging alarm informational")
-            reg.write(router.name, order, "no cdp log mismatch duplex")
+                reg.write(router.name, order, " redistribute " + As.igp.lower() + " " + str(process) + " route-map SET_COMMUNITY","i")
+            reg.write(router.name, order, " exit-address-family","j")
+            add_exlam("j")
+            reg.write(router.name, order, "ip forward-protocol nd","j")
+            reg.write(router.name, order, "no ip http server","j")
+            reg.write(router.name, order, "no ip http secure-server","j")
+            add_exlam("j"), add_exlam("j"), add_exlam("j")
+            reg.write(router.name, order, "logging alarm informational","j")
+            reg.write(router.name, order, "no cdp log mismatch duplex","j")
 
             if As.igp == "OSPF":
-                reg.write(router.name, order, "ipv6 router ospf 2")
-                reg.write(router.name, order, " router-id " + router.router_id)
-                reg.write(router.name, order, " log-adjacency-changes")
+                reg.write(router.name, order, "ipv6 router ospf 2","j")
+                reg.write(router.name, order, " router-id " + router.router_id,"j")
+                reg.write(router.name, order, " log-adjacency-changes","j")
             elif As.igp == "RIP":
-                reg.write(router.name, order, "ipv6 router rip 1")
-                reg.write(router.name, order, " redistribute connected")
+                reg.write(router.name, order, "ipv6 router rip 1","j")
+                reg.write(router.name, order, " redistribute connected","j")
 
 '''
 functions related to output

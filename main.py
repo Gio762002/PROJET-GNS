@@ -30,6 +30,7 @@ for json_as in network_intent['AS']: # json_as is a dict
     as_name = f"as{json_as['number']}"
     as_instance = classr.autonomous_system(json_as['number'], 
                                            json_as['loopback_range'],
+                                           json_as['IP_range'],
                                            json_as['protocol'], 
                                            json_as['community'], 
                                            json_as['community_number'])
@@ -52,7 +53,7 @@ for json_as in network_intent['AS']: # json_as is a dict
             fctr.init_interface(router_instance,interface_instance) # bind to router
             
             if json_interface['neighbor'] != '':
-                neighbor_id = ((json_interface['neighbor'][1:]+".")*4)[:-1]
+                neighbor_id = ((json_interface['neighbor'][1:]+".")*4)[:-1] #all functions use router_id as an index, and they were wrote first so sorry for neighbor.
                 as_instance.link_dict[(router_instance.router_id, interface_instance.name)] = (neighbor_id, json_interface['neighbor_interface'])
             
 
@@ -62,11 +63,14 @@ for json_as in network_intent['AS']: # json_as is a dict
     as_instance.auto_loopback()
     as_instance.generate_loopback_plan()
 
-# for As in as_dict.values():
-#     print("As",As.as_id,":",As.routers)
+for As in as_dict.values():
+    print("As",As.as_id,":",As.routers)
 fctr.as_local_links(as_dict)
 for As in as_dict.values():
-    for router in As.routers.values():
-        for interface in router.interfaces.values():
-            print(router.name,"#",interface.name," is ",interface.statu," connet to ",interface.connected_router," via ",interface.connected_interface)
-            print("protocol:",interface.igp_protocol_type," egp:",interface.egp_protocol_type,"running",interface.protocol_process)
+    print("As",As.as_id,":",As.link_dict)
+# for As in as_dict.values():
+#     for router in As.routers.values():
+#         for interface in router.interfaces.values():
+#             print(router.name,"#",interface.name," is ",interface.statu," connet to ",interface.connected_router," via ",interface.connected_interface)
+#             print("protocol:",interface.igp_protocol_type," egp:",interface.egp_protocol_type,"running",interface.protocol_process)
+fctr.as_auto_addressing_for_link(as_dict)

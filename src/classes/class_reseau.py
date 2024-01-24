@@ -29,9 +29,10 @@ class interface:
 
 class autonomous_system:
 
-    def __init__(self, as_id, loopback_range, igp, community, community_number):
+    def __init__(self, as_id, loopback_range, ip_range, igp, community, community_number):
         self.as_id = as_id
         self.loopback_range = loopback_range
+        self.ip_range = ip_range
         self.community = community # "customer", "provider", "settlement-free peer"
         self.community_number = community_number
         self.routers = {} # router_id : router(object)

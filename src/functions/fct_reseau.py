@@ -44,15 +44,16 @@ def get_router_instance(router_id,dict_as):
             return As.routers.get(router_id)
     raise Exception("router_id not found")
 
-def as_auto_addressing_for_link(As,ip_range,dict_as): # ip_range = "2001:100::0", As as an instance, dict_as as a list of As instances
+def as_auto_addressing_for_link(dict_as): # ip_range = "2001:100::0", As as an instance, dict_as as a list of As instances
+    for As in dict_as.values():    
         link_dict_copy = As.link_dict.copy()
         numero_link = 0
         for ((r1,i1),(r2,i2)) in As.link_dict.items(): #all are strings   
             del link_dict_copy[(r2,i2)]
             if (r1,i1) in link_dict_copy.keys():
                 numero_link += 1
-                s_address = ip_range[:-1] + str(As.as_id) + ":" + str(numero_link) + "::1"
-                b_address = ip_range[:-1] + str(As.as_id) + ":" + str(numero_link) + "::2"
+                s_address = As.ip_range[:-1] + str(As.as_id) + ":" + str(numero_link) + "::1"
+                b_address = As.ip_range[:-1] + str(As.as_id) + ":" + str(numero_link) + "::2"
                 if r1 > r2:
                     addresses = (b_address,s_address)          
                 else:

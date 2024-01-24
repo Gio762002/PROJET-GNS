@@ -17,7 +17,7 @@ class registrar(): #designed for routers and their interfaces
         """
         writing order:
         # 0 : default
-        # 1 : bgp
+        # 1 : bgp (but specific inside by caracters)
         # 2 : community-list
         # 3 : ospf/rip
         # 4 : prefix-list
@@ -54,7 +54,7 @@ class registrar(): #designed for routers and their interfaces
     def save_as_txt(self):
         files = {}
         for target in self.general_register.keys():
-            files[target] = "output/i" + target[1:] + "_startup-config_2.cfg"
+            files[target] = "output/i" + target[1:] + "_startup-config.cfg"
         
         for (target, file) in files.items():
             if os.path.exists(file): 
@@ -70,7 +70,7 @@ class registrar(): #designed for routers and their interfaces
                         f.write("!\n")
                 for key, value in self.general_register[target].items():
                     if type(key) == int :
-                        if isinstance(value, dict):
+                        if isinstance(value, dict):#designed for bgp
                             for second in value.values():
                                 for i in second:
                                     f.write(i + "\n")

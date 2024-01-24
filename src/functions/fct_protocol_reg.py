@@ -92,7 +92,7 @@ def as_enable_BGP(dict_as, neighbor_info, reg,  apply_policy=False):
     # loopback_plan: result of distribute_loopback(dict_as)
     # neighbor_info: result of generate_eBGP_neighbor_info(dict_as)
     order = 1
-    
+    # "a","b","c" etc mean the secondary order of writing
     for As in dict_as.values():
         for router in As.routers.values(): #router as an object
             def add_exlam(second=None):
@@ -118,7 +118,7 @@ def as_enable_BGP(dict_as, neighbor_info, reg,  apply_policy=False):
                         reg.write(router.name, order, "  neighbor " + str(loopback)[:-4] + " send-community","f")                      
             
             for interface in router.interfaces.values(): #interface as an object
-                if interface.egp_protocol_type == "eBGP": #对于每个ebgp接口
+                if interface.egp_protocol_type == "eBGP":
                     (rm_as,_,_,ABR_int_address) = find_eBGP_neighbor_info(router.router_id,interface.name,neighbor_info) 
                     reg.write(router.name, order, " neighbor " + ABR_int_address + " remote-as " + str(rm_as),"c")
                     reg.write(router.name, order, "  neighbor " + ABR_int_address + " activate","e")

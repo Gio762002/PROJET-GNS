@@ -1,6 +1,7 @@
 import json
 import sys
 sys.path.append('PROJET-GNS/src/')
+sys.path.append('src/')
 from classes import class_reseau as classr
 from classes import class_output as output
 from functions import fct_reseau as fctr
@@ -9,7 +10,7 @@ from functions import fct_show as sh
 
 reg = output.registrar()
 
-file_path = 'PROJET-GNS/network_intent_data.json'
+file_path = 'network_intent_data.json'
 
 with open(file_path, 'r') as file:
     network_intent = json.load(file)
@@ -151,4 +152,4 @@ sh.show_as_router_address(as_dict["as2"])
 
 
 
-# reg.save_as_txt()
+reg.save_as_txt()

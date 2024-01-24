@@ -25,7 +25,7 @@ network_intent_data = {
             },
             {
               "name": "GigabitEthernet1/0",
-              "neighbor": "R1",
+              "neighbor": "R2",
               "neighbor_interface": "GigabitEthernet1/0"     
             },
             {

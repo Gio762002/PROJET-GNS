@@ -123,15 +123,12 @@ fctp.as_config_interfaces(as_dict,reg)
 fctp.as_config_unused_interface_and_loopback0(as_dict,reg) 
 
 for AS in as_dict.values():
-    m = 0
     if AS.igp == "OSPF":
         fctp.as_enable_ospf(AS,reg)
-        m += 1
     elif AS.igp == "RIP":
         fctp.as_enable_rip(AS,reg)
-        m += 1
-    if m == 1:
-        fctp.as_enable_BGP(as_dict,neighbor_info,reg)
+    
+    fctp.as_enable_BGP(as_dict,neighbor_info,reg)
 
 # reg.display(reg.general_register)
 

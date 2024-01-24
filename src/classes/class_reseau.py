@@ -11,6 +11,9 @@ class router:
         self.type = type # ABR, ASBR, Internal 
         self.position = None # name of the AS where the router is located, to be tracked for any modification 
 
+    def get_router_id(self):
+        self.router_id = ((self.name[1:]+".")*4)[:-1]
+
 class interface:
     
     def __init__(self,name,igp_protocol_type=None):
@@ -26,8 +29,9 @@ class interface:
 
 class autonomous_system:
 
-    def __init__(self, as_id, igp, community, community_number):
+    def __init__(self, as_id, loopback_range, igp, community, community_number):
         self.as_id = as_id
+        self.loopback_range = loopback_range
         self.community = community # "customer", "provider", "settlement-free peer"
         self.community_number = community_number
         self.routers = {} # router_id : router(object)
@@ -36,18 +40,25 @@ class autonomous_system:
         self.igp = igp # OSPF or RIP
         self.bgp = "BGP"
 
+    def auto_loopback(self):
+        for router_id,router in self.routers.items():
+            router.loopback = self.loopback_range[:-1] + str(self.as_id) + ":" + (str(router_id).split('.'))[0] + "::1/128"
+
+    def generate_loopback_plan(self):
+        for router_id,router in self.routers.items():
+            self.loopback_plan[router_id] = router.loopback
 
     def construct_link_dict(self):
+        '''行读intent文件导致以下方式不现实'''
         link_dict = {}
-        for router_id, router in self.routers.items():
-            for interface in router.interfaces.values():
-                if interface.connected_router is not None:# None means the loopback0
-                    link_dict[(router_id, interface.name)]=(interface.connected_router, interface.connected_interface)
-                    #(router_id, interface.name): (interface.connected_router, interface.connected_interface) and its reverse
-                    link_dict[(interface.connected_router, interface.connected_interface)]=(router_id, interface.name)
-        self.link_dict = link_dict
+        # for router_id, router in self.routers.items():
+        #     for interface in router.interfaces.values():
+        #         if interface.connected_router is not None:# None means the loopback0
+        #             link_dict[(router_id, interface.name)]=(interface.connected_router, interface.connected_interface)
+        #             #(router_id, interface.name): (interface.connected_router, interface.connected_interface) and its reverse
+        #             link_dict[(interface.connected_router, interface.connected_interface)]=(router_id, interface.name)
 
-    def update_link_dict(self, r1, r2): #r1, r2 are strings
+    def update_link_dict(self, r1, r2): #r1, r2 are strings, delete a link
         link_dict_copy = self.link_dict.copy()
         for (rt1,int1),(rt2,int2) in link_dict_copy.items():
             if rt1 == r1 and rt2 == r2:

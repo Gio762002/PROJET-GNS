@@ -1,27 +1,28 @@
 '''
-Clarification : all full names (router/interface) refer to objects, and all abbrev refer to strings 
-certains fcts have parameter : dict_as, which is a dict of all AS objects that will be used in the main program
+Clarification : all full names (router/interface) refer to instances, and all abbrev refer to strings 
+certains fcts have parameter : dict_as, which is a dict of all As instances that will be used in the main program
 '''
 
 def init_interface(router,interface):
     router.all_interfaces[interface.name] = 0 # .name is the key
     router.interfaces[interface.name] = interface
 
-def local_link(router1,router2,interface1,interface2):#all objects
-    router1.all_interfaces[interface1.name] = 1 #same as below but more clear
-    interface1.statu = "up" # need to be associated by corresponding Cisco command
-    interface1.connected_router = router2.router_id
-    interface1.connected_interface = interface2.name
-    router1.neighbors.append(router2.router_id)
+'''由于行读intent文件以下方式不现实'''
+# def local_link(router1,router2,interface1,interface2):#all instances
+#     router1.all_interfaces[interface1.name] = 1 #same as below but more clear
+#     interface1.statu = "up" # need to be associated by corresponding Cisco command
+#     interface1.connected_router = router2.router_id
+#     interface1.connected_interface = interface2.name
+#     router1.neighbors.append(router2.router_id)
 
-    router2.all_interfaces[interface2.name] = 1
-    interface2.statu = "up" # need to be associated by corresponding Cisco command
-    interface2.connected_router = router1.router_id
-    interface2.connected_interface = interface1.name
-    router2.neighbors.append(router1.router_id)
-    if router1.position != router2.position:
-        interface1.egp_protocol_type = "eBGP"
-        interface2.egp_protocol_type = "eBGP"
+#     router2.all_interfaces[interface2.name] = 1
+#     interface2.statu = "up" # need to be associated by corresponding Cisco command
+#     interface2.connected_router = router1.router_id
+#     interface2.connected_interface = interface1.name
+#     router2.neighbors.append(router1.router_id)
+#     if router1.position != router2.position:
+#         interface1.egp_protocol_type = "eBGP"
+#         interface2.egp_protocol_type = "eBGP"
 
 def reset_interface(router,int): # only one side
     router.all_interfaces[int] = 0
@@ -38,37 +39,31 @@ def delete_link(router1,router2,dict_as): # = reset_interface for both sides
     for interface in router2.interfaces.values():
         if interface.connected_router == router1.router_id:
             reset_interface(router2,interface.name)
-    # uploade the AS link list
+    # uploade the As link list
     for As in dict_as.values():
         if As.as_id == router1.position or As.as_id == router2.position:
             As.update_link_dict(router1.router_id,router2.router_id)
 
 
-def reinit_router(router,loopback,type): #router as an object
+def reinit_router(router,loopback,type): #router as an instance
     router.loopback = loopback
     router.type = type
 
-#def distribute_router_id(router,numero_router):
-#    router.router_id = (str(numero_router)+".")*4-"."
-
-#def reinit_as(AS,id,igp):
-#    AS.as_id = id
-#    AS.igp = igp
  
-def add_router_to_as(router,AS): #router,AS are objects
-    AS.routers[router.router_id] = router
-    router.position = AS.as_id #router.position is a string
+def add_router_to_as(router,As): #router,As are instances
+    As.routers[router.router_id] = router
+    router.position = As.as_id #router.position is a string
 
 
 '''three fcts concerning address distribution'''
 #distribution of ipv6 addresses for an as
-def get_router_object(router_id,dict_as):
+def get_router_instance(router_id,dict_as):
     for As in dict_as.values():
         if router_id in As.routers.keys():
             return As.routers.get(router_id)
     raise Exception("router_id not found")
 
-def as_auto_addressing_for_link(As,ip_range,dict_as): # ip_range = "2001:100::0", AS as an object, dict_as as a list of AS objects
+def as_auto_addressing_for_link(As,ip_range,dict_as): # ip_range = "2001:100::0", As as an instance, dict_as as a list of As instances
         link_dict_copy = As.link_dict.copy()
         numero_link = 0
         for ((r1,i1),(r2,i2)) in As.link_dict.items(): #all are strings   
@@ -81,22 +76,54 @@ def as_auto_addressing_for_link(As,ip_range,dict_as): # ip_range = "2001:100::0"
                     addresses = (b_address,s_address)          
                 else:
                     addresses = (s_address,b_address)# router having bigger id has bigger address
-            router1 = get_router_object(r1,dict_as)
-            router2 = get_router_object(r2,dict_as)
+            router1 = get_router_instance(r1,dict_as)
+            router2 = get_router_instance(r2,dict_as)
             if router1.interfaces.get(i1).address_ipv6_global is None:
                 router1.interfaces.get(i1).address_ipv6_global = addresses[0]
             if router2.interfaces.get(i2).address_ipv6_global is None:
                 router2.interfaces.get(i2).address_ipv6_global = addresses[1]
 
-def as_auto_loopback(AS,ip_range): # AS as an object
-    for router_id,router in AS.routers.items():
-        router.loopback = ip_range[:-1] + str(AS.as_id) + ":" + (str(router_id).split('.'))[0] + "::1/128"
 
+# def local_link(router1,router2,interface1,interface2):#all instances
+#     router1.all_interfaces[interface1.name] = 1 #same as below but more clear
+#     interface1.statu = "up" # need to be associated by corresponding Cisco command
+#     interface1.connected_router = router2.router_id
+#     interface1.connected_interface = interface2.name
+#     router1.neighbors.append(router2.router_id)
 
-def as_loopback_plan(AS): #AS as an object
-    for router_id,router in AS.routers.items():
-        AS.loopback_plan[router_id] = router.loopback
+#     router2.all_interfaces[interface2.name] = 1
+#     interface2.statu = "up" # need to be associated by corresponding Cisco command
+#     interface2.connected_router = router1.router_id
+#     interface2.connected_interface = interface1.name
+#     router2.neighbors.append(router1.router_id)
+#     if router1.position != router2.position:
+#         interface1.egp_protocol_type = "eBGP"
+#         interface2.egp_protocol_type = "eBGP"
 
+'''as.link_dict info comes first from intent file'''
+def as_local_links(dict_as):
+    for As in dict_as.values():
+        for ((r1,i1),(r2,i2)) in As.link_dict.items():
+            router1 = get_router_instance(r1,dict_as)
+            router2 = get_router_instance(r2,dict_as)
+            interface1 = router1.interfaces.get(i1)
+            interface2 = router2.interfaces.get(i2)
+            
+            router1.all_interfaces[interface1.name] = 1 #same as below but more clear
+            interface1.statu = "up" # need to be associated by corresponding Cisco command
+            interface1.connected_router = router2.router_id
+            interface1.connected_interface = interface2.name
+            router1.neighbors.append(router2.router_id)
+
+            router2.all_interfaces[interface2.name] = 1
+            interface2.statu = "up" # need to be associated by corresponding Cisco command
+            interface2.connected_router = router1.router_id
+            interface2.connected_interface = interface1.name
+            router2.neighbors.append(router1.router_id)
+            
+            if router1.position != router2.position:
+                interface1.egp_protocol_type = "eBGP"
+                interface2.egp_protocol_type = "eBGP"
 
 
 

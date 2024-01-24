@@ -5,8 +5,10 @@ network_intent_data = {
     {
       "number": "1",
       "IP_range":"2001.127.100.0::/64",
-      "loopback_range":"100::/128",
-      "protocol":"RIP",
+      "loopback_range":"2001:100::",
+      "protocol":"OSPF",
+      "community": "customer",
+      "community_number": "101",
       "routers": [
         {
           "name": "R1",
@@ -209,8 +211,10 @@ network_intent_data = {
     {
       "number": "2",
       "IP_range":"2001.127.200.0::/64",
-      "loopback_range":"200::/128",
-      "protocol":"OSPF",
+      "loopback_range":"2001:200::",
+      "protocol":"RIP",
+      "community": "provider",
+      "community_number": "102",
       "routers": [
         {
           "name": "R8",
@@ -412,7 +416,7 @@ network_intent_data = {
   ]
 }
 
-file_path = 'network_intent.json'
+file_path = 'PROJET-GNS/network_intent_data.json'
 
 with open(file_path, 'w') as file:
     json.dump(network_intent_data, file, indent=4)

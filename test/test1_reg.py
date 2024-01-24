@@ -1,5 +1,5 @@
 import sys
-sys.path.append('src/')
+sys.path.append('PROJET-GNS/src/')
 from classes import class_reseau as classr
 from classes import class_output as output
 from functions import fct_reseau as fctr

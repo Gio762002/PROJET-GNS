@@ -1,14 +1,15 @@
 import json
 import sys
-import class_reseau as classr
-import class_output as output
-import fct_reseau as fctr
-import fct_protocol_reg as fctp
-import fct_show as sh
+sys.path.append('PROJET-GNS/src/')
+from classes import class_reseau as classr
+from classes import class_output as output
+from functions import fct_reseau as fctr
+from functions import fct_protocol_reg as fctp
+from functions import fct_show as sh
 
 reg = output.registrar()
 
-file_path = 'network_intent.json'
+file_path = 'PROJET-GNS/network_intent_data.json'
 
 with open(file_path, 'r') as file:
     network_intent = json.load(file)
@@ -46,7 +47,7 @@ for as_system in network_intent['AS']:
     # print(as_system['number'],as_system['protocol'])
     # create as_objects dans an dictionary as_dict
     as_name = f"as{as_system['number']}"
-    as_instance = classr.autonomous_system(as_system['number'],as_system['protocol'])
+    as_instance = classr.autonomous_system(as_system['number'], as_system['protocol'], as_system["community"], as_system["community_number"])
     as_dict[as_name] = as_instance
     # loopback range
     loopback_dic[as_name] = as_system['loopback_range']
@@ -56,12 +57,12 @@ for as_system in network_intent['AS']:
     for router in as_system['routers']:
         i += 1 
         # create router_objects dans an dictionary router_dic
-        router_instance = classr.router()
         router_name = router['name']
+        router_instance = classr.router(router_name)
         router_dic[router_name] = router_instance
         router_dic[router_name].router_id = f"{i}.{i}.{i}.{i}"
         # create register
-        reg.create_register(router_dic[router_name].router_id)
+        reg.create_register(router_dic[router_name].name)
         # add router to as
         fctr.add_router_to_as(router_dic[router_name], as_dict[as_name])
         
@@ -71,19 +72,19 @@ for as_system in network_intent['AS']:
         link_list = []
         for interface in interfaces:
             # create interface_objects dans an dictionary router_interface_dic
-            interface_name = f"{router_name}eth{j}"
+            interface_name = f"{router_name}GigabitEthernet{j}"
             router_interface_instance = classr.interface(interface['name'])
             router_interface_dic[interface_name] = router_interface_instance
             # init interface
             fctr.init_interface(router_dic[router_name], router_interface_dic[interface_name])
-            reg.add_entry(router_dic[router_name].router_id, router_interface_dic[interface_name].name)
+            reg.add_entry(router_dic[router_name].name, router_interface_dic[interface_name].name)
 
             if interface['neighbor'] != '0':
                 link = []
                 link.append(router_name)
                 link.append(interface['neighbor'])
                 link.append(interface_name)
-                link.append(f"{interface['neighbor']}eth{j}") 
+                link.append(f"{interface['neighbor']}GigabitEthernet{j}") 
                 link_list.append(link)
 
             j += 1
@@ -117,21 +118,30 @@ for AS in as_dict.values():
 neighbor_info = fctp.generate_eBGP_neighbor_info(as_dict)
 # print("@neighbor_info: ",neighbor_info)
 
+fctp.as_config_interfaces(as_dict,reg)
 fctp.as_config_unused_interface_and_loopback0(as_dict,reg) 
 
 for AS in as_dict.values():
+    m = 0
     if AS.igp == "OSPF":
         fctp.as_enable_ospf(AS,reg)
+        m += 1
     elif AS.igp == "RIP":
         fctp.as_enable_rip(AS,reg)
+        m += 1
+    if m == 1:
+        fctp.as_enable_BGP(as_dict,neighbor_info,reg)
+
 # reg.display(reg.general_register)
 
 
 
-def print_dict_contents(input_dict):
-    for key, value in input_dict.items():
-        print(f"Key: {key}, Value: {value}")
-    print()
+# sh.show_as_router_status(as_dict["as1"])
+sh.show_as_loopback_plan(as_dict["as1"])
+sh.show_as_loopback_plan(as_dict["as2"])
+sh.show_as_router_address(as_dict["as1"])
+# sh.show_as_router_status(as_dict["as2"])
+sh.show_as_router_address(as_dict["as2"])
 
 # print_dict_contents(as_dict)
 # print_dict_contents(router_dic)

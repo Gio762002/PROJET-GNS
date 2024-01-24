@@ -6,7 +6,7 @@ network_intent_data = {
   [
     {
       "number": "1",
-      "IP_range":"2001.127.100.0::/64",
+      "IP_range":"2001:127:100::/64",
       "loopback_range":"2001:100::",
       "protocol":"RIP",
       "community": "provider",
@@ -72,7 +72,7 @@ network_intent_data = {
 
     {
       "number": "2",
-      "IP_range":"2001.127.200.0::/64",
+      "IP_range":"2001:127:200::/64",
       "loopback_range":"2001:200::",
       "protocol":"OSPF",
       "community": "provider",
@@ -218,7 +218,7 @@ network_intent_data = {
 
     {
       "number": "3",
-      "IP_range":"2001.127.300.0::/64",
+      "IP_range":"2001:127:300::/64",
       "loopback_range":"2001:300::",
       "protocol":"RIP",
       "community": "customer",
@@ -284,7 +284,7 @@ network_intent_data = {
 
     {
       "number": "4",
-      "IP_range":"2001.127.400.0::/64",
+      "IP_range":"2001:127:400::/64",
       "loopback_range":"2001:400::",
       "protocol":"OSPF",
       "community": "customer",

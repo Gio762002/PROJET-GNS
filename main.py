@@ -63,8 +63,8 @@ for json_as in network_intent['AS']: # json_as is a dict
     as_instance.auto_loopback()
     as_instance.generate_loopback_plan()
 
-for As in as_dict.values():
-    print("As",As.as_id,":",As.routers)
+# for As in as_dict.values():
+#     print("As",As.as_id,":",As.routers)
 fctr.as_local_links(as_dict)
 for As in as_dict.values():
     print("As",As.as_id,":",As.link_dict)
@@ -74,3 +74,8 @@ for As in as_dict.values():
 #             print(router.name,"#",interface.name," is ",interface.statu," connet to ",interface.connected_router," via ",interface.connected_interface)
 #             print("protocol:",interface.igp_protocol_type," egp:",interface.egp_protocol_type,"running",interface.protocol_process)
 fctr.as_auto_addressing_for_link(as_dict)
+# for As in as_dict.values():
+#     for router in As.routers.values():
+#         for interface in router.interfaces.values():
+#             print(router.name,"#",interface.name," is ",interface.statu," connet to ",interface.connected_router," via ",interface.connected_interface)
+#             print("@:",interface.address_ipv6_global)

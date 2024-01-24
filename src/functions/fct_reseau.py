@@ -49,11 +49,12 @@ def as_auto_addressing_for_link(dict_as): # ip_range = "2001:100::0", As as an i
         link_dict_copy = As.link_dict.copy()
         numero_link = 0
         for ((r1,i1),(r2,i2)) in As.link_dict.items(): #all are strings   
-            del link_dict_copy[(r2,i2)]
+            if (r2,i2) in link_dict_copy.keys():
+                del link_dict_copy[(r2,i2)]
             if (r1,i1) in link_dict_copy.keys():
                 numero_link += 1
-                s_address = As.ip_range[:-1] + str(As.as_id) + ":" + str(numero_link) + "::1"
-                b_address = As.ip_range[:-1] + str(As.as_id) + ":" + str(numero_link) + "::2"
+                s_address = As.ip_range[:-4] + str(As.as_id) + ":" + str(numero_link) + "::1"
+                b_address = As.ip_range[:-4] + str(As.as_id) + ":" + str(numero_link) + "::2"
                 if r1 > r2:
                     addresses = (b_address,s_address)          
                 else:
@@ -64,6 +65,7 @@ def as_auto_addressing_for_link(dict_as): # ip_range = "2001:100::0", As as an i
                 router1.interfaces.get(i1).address_ipv6_global = addresses[0]
             if router2.interfaces.get(i2).address_ipv6_global is None:
                 router2.interfaces.get(i2).address_ipv6_global = addresses[1]
+
 
 '''as.link_dict info comes first from intent file'''
 def as_local_links(dict_as):

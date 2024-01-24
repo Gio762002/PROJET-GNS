@@ -56,10 +56,14 @@ class registrar(): #designed for routers and their interfaces
         for target in self.general_register.keys():
             files[target] = "output/i" + target[1:] + "_startup-config.cfg"
         
-        for (target, file) in files.items():
-            if os.path.exists(file): 
-                os.remove(file)
             
+        folder_path = "output/"
+        for file_name in os.listdir(folder_path):
+            if file_name.endswith(".cfg"):
+                file_path = os.path.join(folder_path, file_name)
+                os.remove(file_path)
+                
+        for (target, file) in files.items():         
             with open(file, "w") as f:
                 self.write_default(f,target,"beginning")
                 for key, value in self.general_register[target].items():

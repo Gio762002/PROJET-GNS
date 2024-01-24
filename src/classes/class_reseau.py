@@ -26,7 +26,7 @@ class interface:
 
 class autonomous_system:
 
-    def __init__(self, as_id, igp, community,community_number):
+    def __init__(self, as_id, igp, community, community_number):
         self.as_id = as_id
         self.community = community # "customer", "provider", "settlement-free peer"
         self.community_number = community_number

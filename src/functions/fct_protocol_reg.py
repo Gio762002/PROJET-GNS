@@ -1,12 +1,12 @@
 """
-reg is a object of class output
+reg is an instance of the class 'registrar'. 
+It is used to store the configuration commands of routers and interfaces properly in the right position 
+whatever the order of calls of the functions. 
 """
 
 
-"""
-Implement the protocol RIP
-"""
 def as_enable_rip(As,reg):  
+    """Implement RIP for all routers in the As"""
     process_id = 1 
     order = 2
     for router in As.routers.values():
@@ -25,17 +25,16 @@ def as_enable_rip(As,reg):
         
         
 
-"""
-Implement the protocol OSPF
-"""
+
 def as_enable_ospf(As,reg):
+    """Implement OSPF for all routers in the As"""
     process_id = 2 #different from RIP
     order = 2
     for router in As.routers.values():
         reg.write(router.name, order, "ipv6 router ospf " + str(process_id))
         reg.write(router.name, order, " router-id " + router.router_id)
         reg.write(router.name, order, " log-adjacency-changes")
-        for interface in router.interfaces.values(): #interface as an object
+        for interface in router.interfaces.values(): 
             if interface.egp_protocol_type == "eBGP":             
                 reg.write(router.name, order," passive-interface " + interface.name)
         reg.write(router.name, order, " !")
@@ -43,19 +42,20 @@ def as_enable_ospf(As,reg):
         for interface in router.interfaces.values():
             if interface.igp_protocol_type == "RIP":
                 raise Exception("RIP and OSPF cannot be enabled at the same time")
-            if interface.statu == "up":#and interface.protocol_type == None
+            if interface.statu == "up":
                 interface.igp_protocol_type = "OSPF"
                 interface.protocol_process = process_id      
                 reg.write(router.name, interface.name, "ipv6 enable")
                 reg.write(router.name, interface.name, "ipv6 ospf " + str(process_id) + " area 0")
         reg.write(router.name, "Loopback0", "ipv6 ospf " + str(process_id) + " area 0")
 
-'''
-For all ABR in all as, mark their ebgp interface and find the info of its connected int.
-RETURN: {(as,router,ABR_interface,@int):(as,router,ABR_interface,@int)}
-可能要得到连接路由器as的role
-'''            
+         
 def generate_eBGP_neighbor_info(dict_as):
+    '''
+    For all ABR in all as, mark their ebgp interface and find the info of its connected int.
+    RETURN: {(as,router,ABR_interface,@int):(as,router,ABR_interface,@int)}
+    可能要得到连接路由器as的role
+    '''   
     neighbor_info = {}
     #this part generates a dict of all router objects, which to be used to get easily the router object by its id
     #if this part will be used frequently, it is better to put it in a separate function
@@ -76,27 +76,27 @@ def generate_eBGP_neighbor_info(dict_as):
                     neighbor_info[(dict_routers[r2].position,r2,int2,ABR_int_address2)] = (dict_routers[r1].position,r1,int1,ABR_int_address1)
     return neighbor_info
 
-'''
-For one particular ABR, find the info of its ebgp interface. RETURN: (as,router,ABR_interface,@int)
-'''     
+   
 def find_eBGP_neighbor_info(r,int,neighbor_info): #int(str) = interface.name
+    '''
+    For one particular ABR, find the info of its ebgp interface. RETURN: (as,router,ABR_interface,@int)
+    '''  
     for key,value in neighbor_info.items():
         if key[1] == r and key[2]==int:
             return value
     return('not found')
 
-"""
-Implement the protocol BGP
-"""
+
 def as_enable_BGP(dict_as, neighbor_info, reg,  apply_policy=False):
-    #加快运行速度：不是反复执行相同的boucle以保证指令顺序而是在输出列表里每条消息前加一个顺序指示符，并在最终的输出时排序
-    # loopback_plan: result of distribute_loopback(dict_as)
-    # neighbor_info: result of generate_eBGP_neighbor_info(dict_as)
+    """
+    Implement BGP for all As
+    "a","b","c" etc mean the secondary order of writing, this mechanism is particularly designed for BGP, 
+    without that, we would have to write 6 loop of only 2 types(interfaces and loopback0)
+    """
     order = 1
-    # "a","b","c" etc mean the secondary order of writing
     for As in dict_as.values():
-        for router in As.routers.values(): #router as an object
-            def add_exlam(second=None):
+        for router in As.routers.values():
+            def add_exlam(second=None): # add exclamation mark to separate the different parts of the configuration
                 if second == None:
                     return reg.write(router.name, order, "!")
                 else:
@@ -118,7 +118,7 @@ def as_enable_BGP(dict_as, neighbor_info, reg,  apply_policy=False):
                     if apply_policy:
                         reg.write(router.name, order, "  neighbor " + str(loopback)[:-4] + " send-community","f")                      
             
-            for interface in router.interfaces.values(): #interface as an object
+            for interface in router.interfaces.values():
                 if interface.egp_protocol_type == "eBGP":
                     (rm_as,_,_,ABR_int_address) = find_eBGP_neighbor_info(router.router_id,interface.name,neighbor_info) 
                     reg.write(router.name, order, " neighbor " + ABR_int_address + " remote-as " + str(rm_as),"c")
@@ -155,9 +155,10 @@ def as_enable_BGP(dict_as, neighbor_info, reg,  apply_policy=False):
                 reg.write(router.name, order, " redistribute connected","l")
 
 '''
-functions related to output
+functions particularly related to complete the configuration
 '''
 def as_config_interfaces(dict_as,reg):
+    """default config of interfaces of all routers in all As"""
     for As in dict_as.values():
         for router in As.routers.values():
             for interface in router.interfaces.values():
@@ -167,6 +168,7 @@ def as_config_interfaces(dict_as,reg):
                     reg.write(router.name,interface.name,"ipv6 address "+str(interface.address_ipv6_global)+str('/64'))
 
 def as_config_unused_interface_and_loopback0(dict_as,reg):
+    """default config of unused interfaces and loopback0 of all routers in all As"""
     for As in dict_as.values():
         for router in As.routers.values():
             reg.write(router.name,"Loopback0","no ip address")

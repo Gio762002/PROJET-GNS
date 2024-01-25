@@ -39,7 +39,7 @@ class autonomous_system:
         self.link_dict = {} #(router_id,interface.name):(router_id,interface.name)
         self.loopback_plan = {} # router_id : loopback
         self.igp = igp # OSPF or RIP
-        self.bgp = "BGP"
+        self.egp = "BGP"
 
     def auto_loopback(self):
         for router_id,router in self.routers.items():

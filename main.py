@@ -20,10 +20,6 @@ In Python, dynamically generating variable names is not a good programming pract
 dictionaries are created to track instances
 '''
 as_dict = {}
-router_dic = {}
-interface_dic = {}
-loopback_dic = {}
-link_dict = {}
 
 # read the intent file, 'simulate' its topologie
 for json_as in network_intent['AS']: # json_as is a dict
@@ -36,7 +32,6 @@ for json_as in network_intent['AS']: # json_as is a dict
                                            json_as['community_number'])
     as_dict[as_name] = as_instance # put inside the dict for further use
 
-
     for json_router in json_as['routers']: # json_router is a dict
         router_name = json_router['name']
         router_instance = classr.router(router_name)
@@ -44,8 +39,6 @@ for json_as in network_intent['AS']: # json_as is a dict
         fctr.add_router_to_as(router_instance,as_instance) # bind to as
         
         reg.create_register(router_instance.name) # creat a register for the router
-        router_dic[router_name] = router_instance # put inside the dict for further use
-
 
         for json_interface in json_router['interfaces']: # json_interface is a dict
             interface_name = f"{router_name}{json_interface['name']}" #something like 'R1GigabitEthernet1/0'
@@ -56,26 +49,27 @@ for json_as in network_intent['AS']: # json_as is a dict
                 neighbor_id = ((json_interface['neighbor'][1:]+".")*4)[:-1] #all functions use router_id as an index, and they were wrote first so sorry for neighbor.
                 as_instance.link_dict[(router_instance.router_id, interface_instance.name)] = (neighbor_id, json_interface['neighbor_interface'])
             
-
             reg.add_entry(router_instance.name,interface_instance.name)
-            interface_dic[interface_name] = interface_instance # put inside the dict for further use
     
     as_instance.auto_loopback()
     as_instance.generate_loopback_plan()
 
-# for As in as_dict.values():
-#     print("As",As.as_id,":",As.routers)
 fctr.as_local_links(as_dict)
+fctr.as_auto_addressing_for_link(as_dict) # from now on, everything is placed, what is left is to implement the protocols.
+
+# print(vars(as_dict["as1"].routers["1.1.1.1"].interfaces["GigabitEthernet1/0"]))
+neighbor_info = fctp.generate_eBGP_neighbor_info(as_dict)
+try:
+    fctp.as_enable_BGP(as_dict, neighbor_info, reg)
+except Exception as e:
+    print("Error implementing BGP : ", e)
+
 for As in as_dict.values():
-    print("As",As.as_id,":",As.link_dict)
-# for As in as_dict.values():
-#     for router in As.routers.values():
-#         for interface in router.interfaces.values():
-#             print(router.name,"#",interface.name," is ",interface.statu," connet to ",interface.connected_router," via ",interface.connected_interface)
-#             print("protocol:",interface.igp_protocol_type," egp:",interface.egp_protocol_type,"running",interface.protocol_process)
-fctr.as_auto_addressing_for_link(as_dict)
-# for As in as_dict.values():
-#     for router in As.routers.values():
-#         for interface in router.interfaces.values():
-#             print(router.name,"#",interface.name," is ",interface.statu," connet to ",interface.connected_router," via ",interface.connected_interface)
-#             print("@:",interface.address_ipv6_global)
+    try:
+        if As.igp == "OSPF":
+            fctp.as_enable_ospf(As, reg)
+        elif As.igp == "RIP":
+            fctp.as_enable_rip(As, reg)
+    except Exception as e:
+        print("Error implementing IGP protocols : ", e)
+reg.save_as_cfg()

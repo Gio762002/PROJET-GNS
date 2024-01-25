@@ -80,13 +80,15 @@ def as_local_links(dict_as):
             interface1.statu = "up" # need to be associated by corresponding Cisco command
             interface1.connected_router = router2.router_id
             interface1.connected_interface = interface2.name
-            router1.neighbors.append(router2.router_id)
+            if router2.router_id not in router1.neighbors:
+                router1.neighbors.append(router2.router_id)
 
             router2.all_interfaces[interface2.name] = 1
             interface2.statu = "up" # need to be associated by corresponding Cisco command
             interface2.connected_router = router1.router_id
             interface2.connected_interface = interface1.name
-            router2.neighbors.append(router1.router_id)
+            if router1.router_id not in router2.neighbors:
+                router2.neighbors.append(router1.router_id)
             
             if router1.position != router2.position:
                 interface1.egp_protocol_type = "eBGP"

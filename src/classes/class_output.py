@@ -50,7 +50,7 @@ class registrar(): #designed for routers and their interfaces
             else:
                 print('\t' * (indent+1) + '--' + str(value))
 
-    def save_as_txt(self):
+    def save_as_cfg(self):
         files = {}
         for target in self.general_register.keys():
             files[target] = "output/i" + target[1:] + "_startup-config.cfg"

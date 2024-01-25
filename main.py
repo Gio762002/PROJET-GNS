@@ -59,7 +59,8 @@ for json_as in network_intent['AS']: # json_as is a dict
 fctr.as_local_links(as_dict)
 fctr.as_auto_addressing_for_link(as_dict) # from now on, everything is placed so can be tracked by attributes, what is left is to implement the protocols.
 
-
+fctp.as_config_interfaces(as_dict, reg)
+fctp.as_config_unused_interface_and_loopback0(as_dict, reg)
 """implement the protocols"""
 neighbor_info = fctp.generate_eBGP_neighbor_info(as_dict)
 try:

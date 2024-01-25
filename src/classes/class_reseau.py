@@ -1,3 +1,11 @@
+'''
+The goal of having all these attributes that seem redundant is to have easier access to information needed for the config.
+More importantly, Python is an interpreted language, the main program would had difficulty to create new variables during the execution 
+and put aside the function that waits for the information that haven't come yet.
+That would went against our design : we want that the main program reads the intent file line by line, and generate configs along the way
+as a human would do. A man keeps in mind the information he needs, and the program keeps them in attributes.
+'''
+
 class router:
    
     def __init__(self,name,type="Internal"):
@@ -5,14 +13,14 @@ class router:
         self.router_id = None
         self.loopback = None
         self.all_interfaces = {"Loopback0":1} #interface.name : occupied? (1 or 0)
-        #self.routing_table = {} ##maybe not needed
-        self.interfaces = {} #interface.name: interface(object)
+        self.interfaces = {} #interface.name: interface (instance)
         self.neighbors = [] #router_id, extrait de self.interface
         self.type = type # ABR, ASBR, Internal 
         self.position = None # name of the AS where the router is located, to be tracked for any modification 
 
     def get_router_id(self):
         self.router_id = ((self.name[1:]+".")*4)[:-1]
+
 
 class interface:
     
@@ -27,6 +35,7 @@ class interface:
         self.egp_protocol_type = None   
         self.protocol_process = None 
 
+
 class autonomous_system:
 
     def __init__(self, as_id, loopback_range, ip_range, igp, community, community_number):
@@ -35,7 +44,7 @@ class autonomous_system:
         self.ip_range = ip_range
         self.community = community # "customer", "provider", "settlement-free peer"
         self.community_number = community_number
-        self.routers = {} # router_id : router(object)
+        self.routers = {} # router_id : router (instance)
         self.link_dict = {} #(router_id,interface.name):(router_id,interface.name)
         self.loopback_plan = {} # router_id : loopback
         self.igp = igp # OSPF or RIP
@@ -48,16 +57,6 @@ class autonomous_system:
     def generate_loopback_plan(self):
         for router_id,router in self.routers.items():
             self.loopback_plan[router_id] = router.loopback
-
-    def construct_link_dict(self):
-        '''行读intent文件导致以下方式不现实'''
-        link_dict = {}
-        # for router_id, router in self.routers.items():
-        #     for interface in router.interfaces.values():
-        #         if interface.connected_router is not None:# None means the loopback0
-        #             link_dict[(router_id, interface.name)]=(interface.connected_router, interface.connected_interface)
-        #             #(router_id, interface.name): (interface.connected_router, interface.connected_interface) and its reverse
-        #             link_dict[(interface.connected_router, interface.connected_interface)]=(router_id, interface.name)
 
     def update_link_dict(self, r1, r2): #r1, r2 are strings, delete a link
         link_dict_copy = self.link_dict.copy()

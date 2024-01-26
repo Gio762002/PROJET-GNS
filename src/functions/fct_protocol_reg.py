@@ -79,13 +79,28 @@ def generate_eBGP_neighbor_info(dict_as):
    
 def find_eBGP_neighbor_info(r,int,neighbor_info): #int(str) = interface.name
     '''
-    For one particular ABR, find the info of its ebgp interface. RETURN: (as,router,ABR_interface,@int)
+    For one particular ABR, find the info of its ebgp interface. RETURN: (As,router,ABR_interface,@int)
     '''  
     for key,value in neighbor_info.items():
         if key[1] == r and key[2]==int:
             return value
     return('not found')
 
+def find_As_neighbor(As,dict_as):
+    """find all the As neighbors of an As from its link_dict. RETURN: {r : (As.community, As.community_number)}"""
+    As_neighbor = {}
+    for (r1,_),(r2,_) in As.link_dict.items(): # find router r2, that is not in the As but connected to it
+        if r2 not in As.routers.keys():
+            for As2 in dict_as.values():
+                if r2 in As2.routers.keys(): # find the As where the router is located
+                    As_neighbor[r1] = (As2.community, As2.community_number)
+        elif r1 not in As.routers.keys():
+            for As2 in dict_as.values():
+                if r1 in As2.routers.keys():
+                    As_neighbor[r2] = (As2.community, As2.community_number)
+    if len(As_neighbor) == 0:
+        raise Exception("No As neighbor found, the As is isolated")
+    return As_neighbor
 
 def as_enable_BGP(dict_as, neighbor_info, reg,  apply_policy=False):
     """
@@ -126,15 +141,15 @@ def as_enable_BGP(dict_as, neighbor_info, reg,  apply_policy=False):
                 if interface.statu == "up": 
                     reg.write(router.name, order,  "  network " + str(interface.address_ipv6_global) + str('/64'),"h")
                 
-                if apply_policy and interface.egp_protocol_type == "eBGP":
+                # if apply_policy and interface.egp_protocol_type == "eBGP":
                     # reg.write(router.name, order, "  neighbor " + str(interface.address_ipv6_global) + " activate","g")
                     # reg.write(router.name, order, "  neighbor " + str(interface.address_ipv6_global) + " route-map TAG_COMMUNITY in","g")
-                    reg.write(router.name, order, "  neighbor " + str(interface.address_ipv6_global) + " route-map FILTER_COMMUNITY out","g")
+                    # reg.write(router.name, order, "  neighbor " + str(interface.address_ipv6_global) + " route-map FILTER_COMMUNITY out","g")
 
-            if apply_policy: 
-                reg.write(router.name, order, "  redistribute connected route-map SET_COMMUNITY","i")
-                process = 1 if As.igp == "RIP" else 2
-                reg.write(router.name, order, "  redistribute " + As.igp.lower() + " " + str(process) + " route-map SET_COMMUNITY","i")
+            # if apply_policy: 
+                # reg.write(router.name, order, "  redistribute connected route-map SET_COMMUNITY","i")
+                # process = 1 if As.igp == "RIP" else 2
+                # reg.write(router.name, order, "  redistribute " + As.igp.lower() + " " + str(process) + " route-map SET_COMMUNITY","i")
             
             reg.write(router.name, order, " exit-address-family","j")
             add_exlam("j")
@@ -146,13 +161,13 @@ def as_enable_BGP(dict_as, neighbor_info, reg,  apply_policy=False):
             reg.write(router.name, order, "logging alarm informational","l")
             reg.write(router.name, order, "no cdp log mismatch duplex","l")
 
-            if As.igp == "OSPF":
-                reg.write(router.name, order, "ipv6 router ospf 2","l")
-                reg.write(router.name, order, " router-id " + router.router_id,"l")
-                reg.write(router.name, order, " log-adjacency-changes","l")
-            elif As.igp == "RIP":
-                reg.write(router.name, order, "ipv6 router rip 1","l")
-                reg.write(router.name, order, " redistribute connected","l")
+            # if As.igp == "OSPF":
+            #     reg.write(router.name, order, "ipv6 router ospf 2","l")
+            #     reg.write(router.name, order, " router-id " + router.router_id,"l")
+            #     reg.write(router.name, order, " log-adjacency-changes","l")
+            # elif As.igp == "RIP":
+            #     reg.write(router.name, order, "ipv6 router rip 1","l")
+            #     reg.write(router.name, order, " redistribute connected","l")
 
 '''
 functions particularly related to complete the configuration
@@ -185,17 +200,17 @@ def as_config_unused_interface_and_loopback0(dict_as,reg):
 """
 functions related to rooting policies
 """
-def tag_community(r, list_name, route_map, community_num, community, reg):
+def tag_community(r, list_name, route_map, community, community_num, reg): # community_num, community are those of the coming As
     reg.write(r, 3, "!")
     reg.write(r, 3, "!")
-    reg.write(r, 3, "ip prefix-list "+ list_name + " seq " + str(10) + " permit ::/0 le 128")
+    reg.write(r, 3, "ipv6 prefix-list "+ list_name + " seq " + str(10) + " permit ::/0 le 128")
     reg.write(r, 3, "!")
     reg.write(r, 3, "!")
     reg.write(r, 4, "route-map " + route_map + " permit " + str(10))
     reg.write(r, 4, " match ipv6 address prefix-list " + list_name)
         
     localpref = {"provider":100, "settlement-free peer":200, "customer":300}
-    reg.write(r, 4, " set local preference " + str(localpref[community]))
+    reg.write(r, 4, " set local-preference " + str(localpref[community]))
     reg.write(r, 4, " set community " + str(community_num) + " additive")
 
 def set_community(r, route_map, community_num, reg):
@@ -215,12 +230,18 @@ def filter_community(r, list_name, community_num, reg):
     reg.write(r, 4, "route-map " + list_name + " deny " + str(20))
 
 
-def as_config_local_pref(dict_as, reg):
+def as_config_local_pref(dict_as, neighbor_info, reg):
     """set the local-pref attribute of BGP paths so As to prefer customers over settlement-free peers over providers"""
     for As in dict_as.values():
+        connected_As_info = find_As_neighbor(As,dict_as) 
         for router in As.routers.values():
-            if router.type == "ABR" :
-                tag_community(router.name, "TAG_COMMUNITY", "RM_COMMUNITY", As.community_number, As.community, reg)
+            if router.router_id in connected_As_info.keys():
+                As2_infos = connected_As_info[router.router_id] #{r : (As.community, As.community_number)}
+                tag_community(router.name, "TAG_COMMUNITY", "RM_COMMUNITY", As2_infos[0], As2_infos[1], reg) #connected_As.community_number, connected_As.community
                 for interface in router.interfaces.values():
                     if interface.egp_protocol_type == "eBGP":
-                        reg.write(router.name, 1, "  neighbor " + str(interface.address_ipv6_global) + " route-map RM_COMMUNITY out","g")
+                        connected_address = find_eBGP_neighbor_info(router.router_id, interface.name, neighbor_info)[3]
+                        reg.write(router.name, 1, "  neighbor " + str(connected_address) + " route-map RM_COMMUNITY in","g")
+            for loopback in As.loopback_plan.values():
+                if loopback != router.loopback:
+                    reg.write(router.name, 1, "  neighbor " + str(loopback)[:-4] + " send-community","f")   

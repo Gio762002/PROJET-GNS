@@ -80,12 +80,9 @@ for As in as_dict.values():
         print("Error implementing IGP protocols : ", e)
 
 """implement routing policies"""
-fctp.as_config_local_pref(as_dict, reg)
+fctp.as_config_local_pref(as_dict, neighbor_info, reg)
 
 """output the configuration files"""
 reg.save_as_cfg()
-# print(vars(as_dict['as1'].routers['2.2.2.2']))
-for As in as_dict.values():
-    sh.show_as_router_address(As)
-# print("---------------")
-# print(as_dict['as2'].link_dict)
+print(as_dict["as1"].routers)
+print(as_dict["as1"].link_dict)

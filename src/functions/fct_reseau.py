@@ -15,37 +15,14 @@ def add_router_to_as(router, As):
 
 
 '''
-Three fcts of distribution of addresses
+fcts of distribution of addresses
 '''
 def get_router_instance(router_id, dict_as):
-    """distribution of ipv6 addresses for an As"""
+    """get router instance from As instances, when only router_id is known"""
     for As in dict_as.values():
         if router_id in As.routers.keys():
             return As.routers.get(router_id)
     raise Exception("router_id not found")
-
-def as_auto_addressing_for_link(dict_as):
-    """distribution of ipv6 addresses for an As, based on the links the routers in the As have"""
-    for As in dict_as.values():    
-        link_dict_copy = As.link_dict.copy()
-        numero_link = 0
-        for ((r1, i1),(r2, i2)) in As.link_dict.items(): #all are strings   
-            if (r2, i2) in link_dict_copy.keys():
-                del link_dict_copy[(r2, i2)] # eliminate the reverse link to avoid duplicate
-                numero_link += 1
-                s_address = As.ip_range[:-4] + str(As.as_id) + ":" + str(numero_link) + "::1"
-                b_address = As.ip_range[:-4] + str(As.as_id) + ":" + str(numero_link) + "::2"
-                if r1 > r2:
-                    addresses = (b_address, s_address)          
-                else:
-                    addresses = (s_address, b_address)# router having bigger id has bigger address
-            router1 = get_router_instance(r1, dict_as)
-            router2 = get_router_instance(r2, dict_as)
-            if router1.interfaces.get(i1).address_ipv6_global is None:
-                router1.interfaces.get(i1).address_ipv6_global = addresses[0]
-            if router2.interfaces.get(i2).address_ipv6_global is None:
-                router2.interfaces.get(i2).address_ipv6_global = addresses[1]
-
 
 def connect_routers(router1, interface1, router2, interface2):
     """separated from the function below for making the code more readable"""
@@ -72,6 +49,25 @@ def as_local_links(dict_as):
             if router1.position != router2.position:
                 interface1.egp_protocol_type = "eBGP"
                 interface2.egp_protocol_type = "eBGP"
+
+def as_auto_addressing_for_link(dict_as):
+    """distribution of ipv6 addresses for an As, based on the links the routers in the As have"""
+    for As in dict_as.values():    
+        numero_link = 0
+        for ((r1, i1),(r2, i2)) in As.link_dict.items():
+            numero_link += 1
+            s_address = As.ip_range[:-4] + str(As.as_id) + ":" + str(numero_link) + "::1"
+            b_address = As.ip_range[:-4] + str(As.as_id) + ":" + str(numero_link) + "::2"
+            if r1 > r2:
+                addresses = (b_address, s_address)          
+            else:
+                addresses = (s_address, b_address)# router having bigger id has bigger address
+            router1 = get_router_instance(r1, dict_as)
+            router2 = get_router_instance(r2, dict_as)
+            if router1.interfaces.get(i1).address_ipv6_global is None:
+                router1.interfaces.get(i1).address_ipv6_global = addresses[0]
+            if router2.interfaces.get(i2).address_ipv6_global is None:
+                router2.interfaces.get(i2).address_ipv6_global = addresses[1]
 
 
 # functions not used in our program, but are valuable for future use

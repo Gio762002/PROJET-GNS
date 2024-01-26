@@ -15,7 +15,7 @@ class router:
         self.all_interfaces = {"Loopback0":1} #interface.name : occupied? (1 or 0)
         self.interfaces = {} #interface.name: interface (instance)
         self.neighbors = [] #router_id, extrait de self.interface
-        self.type = type # ABR, ASBR, Internal 
+        self.type = type # ABR, Internal 
         self.position = None # name of the AS where the router is located, to be tracked for any modification 
 
     def get_router_id(self):
@@ -58,9 +58,19 @@ class autonomous_system:
         for router_id,router in self.routers.items():
             self.loopback_plan[router_id] = router.loopback
 
-    def update_link_dict(self, r1, r2): #r1, r2 are strings, delete a link
+    def eliminate_repeat_link(self):
+        link_dict_copy = self.link_dict.copy()
+        for ((r1, i1),(r2, i2)) in self.link_dict.items(): #all are strings
+            if (r2, i2) in self.link_dict.keys() and (r1, i1) in link_dict_copy.keys():
+                del link_dict_copy[(r2, i2)] # eliminate the reverse link to avoid duplicate
+        self.link_dict = link_dict_copy
+
+    def update_link_dict(self, r1, r2):
+        """delete a link from the link_dict, not used"""
         link_dict_copy = self.link_dict.copy()
         for (rt1,int1),(rt2,int2) in link_dict_copy.items():
             if rt1 == r1 and rt2 == r2:
                 del self.link_dict[(rt1,int1)]
                 del self.link_dict[(rt2,int2)]
+
+    

@@ -15,7 +15,7 @@ network_intent_data = {
       [
         {
           "name": "R1",
-          "type": "iBGP",
+          "type": "Internal",
           "bgp_preference": 100,
           "interfaces": [
             {
@@ -42,7 +42,7 @@ network_intent_data = {
         },
         {
           "name": "R2",
-          "type": "eBGP",
+          "type": "ABR",
           "bgp_preference": 100,
           "interfaces": [
             {
@@ -80,7 +80,7 @@ network_intent_data = {
       "routers": [
         {
           "name": "R3",
-          "type": "eBGP",
+          "type": "ABR",
           "bgp_preference": 100,
           "interfaces": [
             {
@@ -107,7 +107,7 @@ network_intent_data = {
         },
         {
           "name": "R4",
-          "type": "iBGP",
+          "type": "Internal",
           "bgp_preference": 100,
           "interfaces": [
             {
@@ -134,7 +134,7 @@ network_intent_data = {
         },
         {
           "name": "R5",
-          "type": "iBGP",
+          "type": "Internal",
           "bgp_preference": 100,
           "interfaces": [
             {
@@ -161,7 +161,7 @@ network_intent_data = {
         },
         {
           "name": "R6",
-          "type": "iBGP",
+          "type": "Internal",
           "bgp_preference": 100,
           "interfaces": [
             {
@@ -188,7 +188,7 @@ network_intent_data = {
         },
         {
           "name": "R7",
-          "type": "iBGP",
+          "type": "Internal",
           "bgp_preference": 100,
           "interfaces": [
             {
@@ -227,7 +227,7 @@ network_intent_data = {
       [
         {
           "name": "R8",
-          "type": "eBGP",
+          "type": "ABR",
           "bgp_preference": 100,
           "interfaces": [
             {
@@ -254,7 +254,7 @@ network_intent_data = {
         },
         {
           "name": "R9",
-          "type": "iBGP",
+          "type": "Internal",
           "bgp_preference": 100,
           "interfaces": [
             {
@@ -293,7 +293,7 @@ network_intent_data = {
       [
         {
           "name": "R10",
-          "type": "eBGP",
+          "type": "ABR",
           "bgp_preference": 100,
           "interfaces": [
             {
@@ -320,7 +320,7 @@ network_intent_data = {
         },
         {
           "name": "R11",
-          "type": "iBGP",
+          "type": "Internal",
           "bgp_preference": 100,
           "interfaces": [
             {

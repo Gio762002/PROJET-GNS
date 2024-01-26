@@ -36,7 +36,7 @@ for json_as in network_intent['AS']: # json_as is a dict
 
     for json_router in json_as['routers']: # json_router is a dict
         router_name = json_router['name']
-        router_instance = classr.router(router_name)
+        router_instance = classr.router(router_name, json_router['type'])
         router_instance.get_router_id()
         fctr.add_router_to_as(router_instance,as_instance) # bind to as
         
@@ -50,7 +50,8 @@ for json_as in network_intent['AS']: # json_as is a dict
             if json_interface['neighbor'] != '':
                 neighbor_id = ((json_interface['neighbor'][1:]+".")*4)[:-1] #all functions use router_id as an index, and they were wrote first so sorry for neighbor.
                 as_instance.link_dict[(router_instance.router_id, interface_instance.name)] = (neighbor_id, json_interface['neighbor_interface'])
-            
+            as_instance.eliminate_repeat_link()
+
             reg.add_entry(router_instance.name,interface_instance.name) #add entry to the register of its router
     
     as_instance.auto_loopback()
@@ -61,9 +62,9 @@ fctr.as_auto_addressing_for_link(as_dict) # from now on, everything is placed so
 
 fctp.as_config_interfaces(as_dict, reg)
 fctp.as_config_unused_interface_and_loopback0(as_dict, reg)
+
 """implement the protocols"""
 neighbor_info = fctp.generate_eBGP_neighbor_info(as_dict)
-
 try:
     fctp.as_enable_BGP(as_dict, neighbor_info, reg)
 except Exception as e:
@@ -78,7 +79,13 @@ for As in as_dict.values():
     except Exception as e:
         print("Error implementing IGP protocols : ", e)
 
-# for As in as_dict.values():
-#     sh.show_as_router_address(As)
+"""implement routing policies"""
+fctp.as_config_local_pref(as_dict, reg)
+
 """output the configuration files"""
 reg.save_as_cfg()
+# print(vars(as_dict['as1'].routers['2.2.2.2']))
+for As in as_dict.values():
+    sh.show_as_router_address(As)
+# print("---------------")
+# print(as_dict['as2'].link_dict)

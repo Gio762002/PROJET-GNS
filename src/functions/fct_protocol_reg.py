@@ -65,9 +65,9 @@ def generate_eBGP_neighbor_info(dict_as):
             dict_routers[router_id] = router
     
     for As in dict_as.values():
-        for (r1,int1),(r2,int2) in As.link_dict.items(): # same infomation will be viewed 4 times, a little bit waste
+        for (r1,int1),(r2,int2) in As.link_dict.items():
             if As.routers.get(r1) == None or As.routers.get(r2) == None: #means interconnection with other AS
-                if dict_routers[r1].position != dict_routers[r2].position: # reduce the 4-time waste to 1-time waste ?
+                if dict_routers[r1].position != dict_routers[r2].position:
                     
                     ABR_int_address1 = dict_routers[r1].interfaces.get(int1).address_ipv6_global
                     ABR_int_address2 = dict_routers[r2].interfaces.get(int2).address_ipv6_global
@@ -127,8 +127,8 @@ def as_enable_BGP(dict_as, neighbor_info, reg,  apply_policy=False):
                     reg.write(router.name, order,  "  network " + str(interface.address_ipv6_global) + str('/64'),"h")
                 
                 if apply_policy and interface.egp_protocol_type == "eBGP":
-                    reg.write(router.name, order, "  neighbor " + str(interface.address_ipv6_global) + " activate","g")
-                    reg.write(router.name, order, "  neighbor " + str(interface.address_ipv6_global) + " route-map TAG_COMMUNITY in","g")
+                    # reg.write(router.name, order, "  neighbor " + str(interface.address_ipv6_global) + " activate","g")
+                    # reg.write(router.name, order, "  neighbor " + str(interface.address_ipv6_global) + " route-map TAG_COMMUNITY in","g")
                     reg.write(router.name, order, "  neighbor " + str(interface.address_ipv6_global) + " route-map FILTER_COMMUNITY out","g")
 
             if apply_policy: 
@@ -213,3 +213,14 @@ def filter_community(r, list_name, community_num, reg):
     reg.write(r, 4, " match community " + list_name)
     reg.write(r, 4, "!")
     reg.write(r, 4, "route-map " + list_name + " deny " + str(20))
+
+
+def as_config_local_pref(dict_as, reg):
+    """set the local-pref attribute of BGP paths so As to prefer customers over settlement-free peers over providers"""
+    for As in dict_as.values():
+        for router in As.routers.values():
+            if router.type == "ABR" :
+                tag_community(router.name, "TAG_COMMUNITY", "RM_COMMUNITY", As.community_number, As.community, reg)
+                for interface in router.interfaces.values():
+                    if interface.egp_protocol_type == "eBGP":
+                        reg.write(router.name, 1, "  neighbor " + str(interface.address_ipv6_global) + " route-map RM_COMMUNITY out","g")

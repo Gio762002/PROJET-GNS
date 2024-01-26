@@ -1,0 +1,304 @@
+{
+    "AS": [
+        {
+            "number": "1",
+            "IP_range": "2001:127:100::/64",
+            "loopback_range": "2001:400::",
+            "protocol": "RIP",
+            "community": "provider",
+            "community_number": "101",
+            "routers": [
+                {
+                    "name": "R1",
+                    "type": "iBGP",
+                    "bgp_preference": 100,
+                    "interfaces": [
+                        {
+                            "name": "GigabitEthernet0/0",
+                            "neighbor": "R3",
+                            "neighbor_interface": "GigabitEthernet0/0"
+                        },
+                        {
+                            "name": "GigabitEthernet1/0",
+                            "neighbor": "",
+                            "neighbor_interface": ""
+                        },
+                        {
+                            "name": "GigabitEthernet2/0",
+                            "neighbor": "",
+                            "neighbor_interface": ""
+                        },
+                        {
+                            "name": "GigabitEthernet3/0",
+                            "neighbor": "",
+                            "neighbor_interface": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "R2",
+                    "type": "iBGP",
+                    "bgp_preference": 100,
+                    "interfaces": [
+                        {
+                            "name": "GigabitEthernet0/0",
+                            "neighbor": "R4",
+                            "neighbor_interface": "GigabitEthernet0/0"
+                        },
+                        {
+                            "name": "GigabitEthernet1/0",
+                            "neighbor": "",
+                            "neighbor_interface": ""
+                        },
+                        {
+                            "name": "GigabitEthernet2/0",
+                            "neighbor": "",
+                            "neighbor_interface": ""
+                        },
+                        {
+                            "name": "GigabitEthernet3/0",
+                            "neighbor": "",
+                            "neighbor_interface": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "R3",
+                    "type": "eBGP",
+                    "bgp_preference": 100,
+                    "interfaces": [
+                        {
+                            "name": "GigabitEthernet0/0",
+                            "neighbor": "R1",
+                            "neighbor_interface": "GigabitEthernet0/0"
+                        },
+                        {
+                            "name": "GigabitEthernet1/0",
+                            "neighbor": "R4",
+                            "neighbor_interface": "GigabitEthernet1/0"
+                        },
+                        {
+                            "name": "GigabitEthernet2/0",
+                            "neighbor": "R5",
+                            "neighbor_interface": "GigabitEthernet2/0"
+                        },
+                        {
+                            "name": "GigabitEthernet3/0",
+                            "neighbor": "",
+                            "neighbor_interface": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "R4",
+                    "type": "eBGP",
+                    "bgp_preference": 100,
+                    "interfaces": [
+                        {
+                            "name": "GigabitEthernet0/0",
+                            "neighbor": "R2",
+                            "neighbor_interface": "GigabitEthernet0/0"
+                        },
+                        {
+                            "name": "GigabitEthernet1/0",
+                            "neighbor": "R3",
+                            "neighbor_interface": "GigabitEthernet1/0"
+                        },
+                        {
+                            "name": "GigabitEthernet2/0",
+                            "neighbor": "R6",
+                            "neighbor_interface": "GigabitEthernet2/0"
+                        },
+                        {
+                            "name": "GigabitEthernet3/0",
+                            "neighbor": "",
+                            "neighbor_interface": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "number": "2",
+            "IP_range": "2001:127:200::/64",
+            "loopback_range": "2001:500::",
+            "protocol": "OSPF",
+            "community": "provider",
+            "community_number": "102",
+            "routers": [
+                {
+                    "name": "R5",
+                    "type": "eBGP",
+                    "bgp_preference": 100,
+                    "interfaces": [
+                        {
+                            "name": "GigabitEthernet0/0",
+                            "neighbor": "R7",
+                            "neighbor_interface": "GigabitEthernet0/0"
+                        },
+                        {
+                            "name": "GigabitEthernet1/0",
+                            "neighbor": "R6",
+                            "neighbor_interface": "GigabitEthernet1/0"
+                        },
+                        {
+                            "name": "GigabitEthernet2/0",
+                            "neighbor": "R3",
+                            "neighbor_interface": "GigabitEthernet2/0"
+                        },
+                        {
+                            "name": "GigabitEthernet3/0",
+                            "neighbor": "",
+                            "neighbor_interface": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "R6",
+                    "type": "eBGP",
+                    "bgp_preference": 100,
+                    "interfaces": [
+                        {
+                            "name": "GigabitEthernet0/0",
+                            "neighbor": "R8",
+                            "neighbor_interface": "GigabitEthernet0/0"
+                        },
+                        {
+                            "name": "GigabitEthernet1/0",
+                            "neighbor": "R5",
+                            "neighbor_interface": ""
+                        },
+                        {
+                            "name": "GigabitEthernet2/0",
+                            "neighbor": "R4",
+                            "neighbor_interface": "GigabitEthernet2/0"
+                        },
+                        {
+                            "name": "GigabitEthernet3/0",
+                            "neighbor": "",
+                            "neighbor_interface": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "number": "3",
+            "IP_range": "2001:127:300::/64",
+            "loopback_range": "2001:600::",
+            "protocol": "RIP",
+            "community": "customer",
+            "community_number": "103",
+            "routers": [
+                {
+                    "name": "R7",
+                    "type": "eBGP",
+                    "bgp_preference": 100,
+                    "interfaces": [
+                        {
+                            "name": "GigabitEthernet0/0",
+                            "neighbor": "R5",
+                            "neighbor_interface": "GigabitEthernet0/0"
+                        },
+                        {
+                            "name": "GigabitEthernet1/0",
+                            "neighbor": "R8",
+                            "neighbor_interface": "GigabitEthernet1/0"
+                        },
+                        {
+                            "name": "GigabitEthernet2/0",
+                            "neighbor": "R9",
+                            "neighbor_interface": "GigabitEthernet2/0"
+                        },
+                        {
+                            "name": "GigabitEthernet3/0",
+                            "neighbor": "",
+                            "neighbor_interface": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "R8",
+                    "type": "eBGP",
+                    "bgp_preference": 100,
+                    "interfaces": [
+                        {
+                            "name": "GigabitEthernet0/0",
+                            "neighbor": "R6",
+                            "neighbor_interface": "GigabitEthernet0/0"
+                        },
+                        {
+                            "name": "GigabitEthernet1/0",
+                            "neighbor": "R7",
+                            "neighbor_interface": "GigabitEthernet1/0"
+                        },
+                        {
+                            "name": "GigabitEthernet2/0",
+                            "neighbor": "R10",
+                            "neighbor_interface": "GigabitEthernet2/0"
+                        },
+                        {
+                            "name": "GigabitEthernet3/0",
+                            "neighbor": "",
+                            "neighbor_interface": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "R9",
+                    "type": "iBGP",
+                    "bgp_preference": 100,
+                    "interfaces": [
+                        {
+                            "name": "GigabitEthernet0/0",
+                            "neighbor": "",
+                            "neighbor_interface": ""
+                        },
+                        {
+                            "name": "GigabitEthernet1/0",
+                            "neighbor": "R7",
+                            "neighbor_interface": "GigabitEthernet1/0"
+                        },
+                        {
+                            "name": "GigabitEthernet2/0",
+                            "neighbor": "",
+                            "neighbor_interface": ""
+                        },
+                        {
+                            "name": "GigabitEthernet3/0",
+                            "neighbor": "",
+                            "neighbor_interface": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "R10",
+                    "type": "iBGP",
+                    "bgp_preference": 100,
+                    "interfaces": [
+                        {
+                            "name": "GigabitEthernet0/0",
+                            "neighbor": "",
+                            "neighbor_interface": ""
+                        },
+                        {
+                            "name": "GigabitEthernet1/0",
+                            "neighbor": "R8",
+                            "neighbor_interface": "GigabitEthernet1/0"
+                        },
+                        {
+                            "name": "GigabitEthernet2/0",
+                            "neighbor": "",
+                            "neighbor_interface": ""
+                        },
+                        {
+                            "name": "GigabitEthernet3/0",
+                            "neighbor": "",
+                            "neighbor_interface": ""
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

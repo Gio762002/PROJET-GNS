@@ -63,6 +63,7 @@ fctp.as_config_interfaces(as_dict, reg)
 fctp.as_config_unused_interface_and_loopback0(as_dict, reg)
 """implement the protocols"""
 neighbor_info = fctp.generate_eBGP_neighbor_info(as_dict)
+
 try:
     fctp.as_enable_BGP(as_dict, neighbor_info, reg)
 except Exception as e:
@@ -77,6 +78,7 @@ for As in as_dict.values():
     except Exception as e:
         print("Error implementing IGP protocols : ", e)
 
-
+# for As in as_dict.values():
+#     sh.show_as_router_address(As)
 """output the configuration files"""
 reg.save_as_cfg()

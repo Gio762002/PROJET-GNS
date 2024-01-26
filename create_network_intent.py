@@ -6,8 +6,8 @@ network_intent_data = {
   [
     {
       "number": "1",
-      "IP_range":"2001:127:100::/64",
-      "loopback_range":"2001:100::",
+      "IP_range":"2001:100::/64",
+      "loopback_range":"2001:500::",
       "protocol":"RIP",
       "community": "provider",
       "community_number": "101",
@@ -72,8 +72,8 @@ network_intent_data = {
 
     {
       "number": "2",
-      "IP_range":"2001:127:200::/64",
-      "loopback_range":"2001:200::",
+      "IP_range":"2001:200::/64",
+      "loopback_range":"2001:600::",
       "protocol":"OSPF",
       "community": "provider",
       "community_number": "102",
@@ -218,8 +218,8 @@ network_intent_data = {
 
     {
       "number": "3",
-      "IP_range":"2001:127:300::/64",
-      "loopback_range":"2001:300::",
+      "IP_range":"2001:300::/64",
+      "loopback_range":"2001:700::",
       "protocol":"RIP",
       "community": "customer",
       "community_number": "103",
@@ -284,8 +284,8 @@ network_intent_data = {
 
     {
       "number": "4",
-      "IP_range":"2001:127:400::/64",
-      "loopback_range":"2001:400::",
+      "IP_range":"2001:400::/64",
+      "loopback_range":"2001:800::",
       "protocol":"OSPF",
       "community": "customer",
       "community_number": "104",

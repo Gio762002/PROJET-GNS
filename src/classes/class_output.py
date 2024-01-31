@@ -10,7 +10,7 @@ class registrar(): #designed for routers and their interfaces
                                        1:{"a":[],"b":[],"c":[],"c":[],"d":[],"e":[],"f":[],"g":[],"h":[],"i":[],"j":[],"k":[],"l":[]},
                                        2:[],
                                        3:[],
-                                       4:[],
+                                       4:{"in":[],"out":[]},
                                        5:[],
                                        "Loopback0":[]} 
         self.log[name] = {}

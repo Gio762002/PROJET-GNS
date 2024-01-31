@@ -81,7 +81,6 @@ for As in as_dict.values():
 
 """implement routing policies"""
 fctp.as_config_local_pref(as_dict, neighbor_info, reg)
-# fctp.as_config_propagate_cus(as_dict, neighbor_info, reg)
 
 """output the configuration files"""
 reg.save_as_cfg()

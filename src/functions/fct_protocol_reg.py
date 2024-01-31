@@ -193,14 +193,14 @@ def as_config_unused_interface_and_loopback0(dict_as,reg):
 """
 functions related to rooting policies
 """
-def tag_community(r, list_name, route_map, community, community_num, reg): # community_num, community are those of the coming As
-    reg.write(r, 3, "!")
-    reg.write(r, 3, "!")
-    reg.write(r, 3, "ipv6 prefix-list "+ list_name + " seq " + str(10) + " permit ::/0 le 128")
-    reg.write(r, 3, "!")
-    reg.write(r, 3, "!")
-    reg.write(r, 4, "route-map " + route_map + " permit " + str(10))
-    reg.write(r, 4, " match ipv6 address prefix-list " + list_name)
+# def tag_community(r, list_name, route_map, community, community_num, reg): # community_num, community are those of the coming As
+#     reg.write(r, 3, "!")
+#     reg.write(r, 3, "!")
+#     reg.write(r, 3, "ipv6 prefix-list "+ list_name + " seq " + str(10) + " permit ::/0 le 128")
+#     reg.write(r, 3, "!")
+#     reg.write(r, 3, "!")
+#     reg.write(r, 4, "route-map " + route_map + " permit " + str(10))
+#     reg.write(r, 4, " match ipv6 address prefix-list " + list_name)
         
     # localpref = {"provider":100, "settlement-free peer":200, "customer":300}
     # reg.write(r, 4, " set local-preference " + str(localpref[community]))
@@ -213,14 +213,6 @@ def tag_community(r, list_name, route_map, community, community_num, reg): # com
 #     reg.write(r, 4, "set community " + str(community_num) + " additive")
 #     reg.write(r, 4, "!")
 
-# def filter_community(r, list_name, community_num, reg):
-#     reg.write(r, 1, "ip community-list standard " + list_name + " permit " + str(community_num),"k")
-#     reg.write(r, 4, "!")
-#     reg.write(r, 4, "!")
-#     reg.write(r, 4, "route-map " + list_name + " permit " + str(10))
-#     reg.write(r, 4, " match community " + list_name)
-#     reg.write(r, 4, "!")
-#     reg.write(r, 4, "route-map " + list_name + " deny " + str(20))
 
 
 def as_config_local_pref(dict_as, neighbor_info, reg):
@@ -230,26 +222,47 @@ def as_config_local_pref(dict_as, neighbor_info, reg):
         for router in As.routers.values():
             if router.router_id in connected_As_info.keys(): # this router is an ABR
                 As2_infos = connected_As_info[router.router_id] #{r : (As.community, As.community_number)}
-                # tag_community(router.name, "TAG_COMMUNITY", "RM_COMMUNITY", As2_infos[0], As2_infos[1], reg) #connected_As.community_number, connected_As.community
-                reg.write(router.name, 4, "route-map ROUTEMAP permit " + str(10))
-                if As2_infos[0] == "customer":
+
+                reg.write(router.name, 4, "route-map ROUTE-MAP-IN permit " + str(10))
+                if As2_infos[0] == "customer": # tag community only for ABR connected to customer
+                    cus_as_id = As2_infos[1]
                     reg.write(router.name, 4, " match ipv6 address prefix-list LIST-CUSTOMER")
                     reg.write(router.name, 3, "ipv6 prefix-list LIST-CUSTOMER seq " + str(10) + " permit ::/0 le 128")
-                    reg.write(router.name, 4, " set community " + str(As2_infos[1]) + " additive")
-                reg.write(router.name, 3, "!")
-                reg.write(router.name, 3, "!")
-                localpref = {"provider":100, "settlement-free peer":200, "customer":300}
-                reg.write(router.name, 4, " set local-preference " + str(localpref[As2_infos[0]]))
+                    reg.write(router.name, 4, " set community " + str(cus_as_id) + " additive")
                 
+                reg.write(router.name, 3, "!")
+                reg.write(router.name, 3, "!")
+
+                localpref = {"provider":100, "settlement-free peer":200, "customer":300}
+                reg.write(router.name, 4, " set local-preference " + str(localpref[As2_infos[0]])) # set local-pref for all ABR
+                
+                if As2_infos[0] == "settlement-free peer":
+                    filter_community(router.name, "LIST-CUSTOMER-OUT", "ROUTE-MAP-OUT", cus_as_id, reg)
+                    reg.write(router.name, 1, "  neighbor " + str(connected_address) + " route-map ROUTE-MAP-OUT OUT","g")
 
                 for interface in router.interfaces.values():
                     if interface.egp_protocol_type == "eBGP":
                         connected_address = find_eBGP_neighbor_info(router.router_id, interface.name, neighbor_info)[3]
-                        reg.write(router.name, 1, "  neighbor " + str(connected_address) + " route-map ROUTEMAP in","g")
+                        reg.write(router.name, 1, "  neighbor " + str(connected_address) + " route-map ROUTE-MAP-IN in","g")           
             for loopback in As.loopback_plan.values():
                 if loopback != router.loopback:
                     reg.write(router.name, 1, "  neighbor " + str(loopback)[:-4] + " send-community","f")   
 
+        # for r,(commu,_) in connected_As_info.items():
+        #     if commu == "settlement-free peer":
+        #         for router in As.routers.values():
+        #             if router.router_id == r:
+        #                 r_name = router.name
+        #         filter_community(r_name, "CUSTOMER-OUT", commu_num, reg) 
+
+def filter_community(r, list_name, route_map, community_num, reg):
+    reg.write(r, 1, "ip community-list standard " + list_name + " permit " + str(community_num),"k")
+    reg.write(r, 4, "!")
+    reg.write(r, 4, "!")
+    reg.write(r, 4, "route-map " + route_map + " permit " + str(10))
+    reg.write(r, 4, " match community " + list_name)
+    reg.write(r, 4, "!")
+    reg.write(r, 4, "route-map " + route_map + " deny " + str(20))
 
         # if 连接的as == customer
             # 进： tag 这个r 上的路由

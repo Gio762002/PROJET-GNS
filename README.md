@@ -29,4 +29,4 @@ There's several python files that achieve the conversion form an intent file to 
 ```fct_show.py```: modular visualization functions.  
 ```test.py```: sample of testing all the functions, can be considered as a simulation. 
 
-##HOW TO RUN IT : Simply run main.py :)
+## HOW TO RUN IT : Simply run main.py :)  

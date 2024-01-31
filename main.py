@@ -74,6 +74,8 @@ except Exception as e:
     print("Error implementing BGP : ", e)
 
 for As in as_dict.values():
+    # sh.show_as_loopback_plan(As)
+    # sh.show_as_router_address(As)
     try:
         if As.igp == "OSPF":
             fctp.as_enable_ospf(As, reg)

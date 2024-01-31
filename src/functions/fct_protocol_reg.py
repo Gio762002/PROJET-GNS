@@ -135,7 +135,8 @@ def as_enable_BGP(dict_as, neighbor_info, reg):
                     reg.write(router.name, order, " neighbor " + str(loopback)[:-4] + " remote-as " + str(router.position),"b") 
                     reg.write(router.name, order, " neighbor " + str(loopback)[:-4] + " update-source loopback0","b")
 
-                    reg.write(router.name, order, "  neighbor " + str(loopback)[:-4] + " activate","f")                  
+                    reg.write(router.name, order, "  neighbor " + str(loopback)[:-4] + " activate","f") 
+                    reg.write(router.name, order, "  neighbor " + str(loopback)[:-4] + " send-community","f")                 
             
             for interface in router.interfaces.values():
                 if interface.egp_protocol_type == "eBGP":
@@ -230,9 +231,9 @@ def as_config_local_pref(dict_as, neighbor_info, reg):
                             connected_address = find_eBGP_neighbor_info(router.router_id, interface.name, neighbor_info)[3]
                             if connected_as_cn == As2_infos[1]:
                                 reg.write(router.name, 1, "  neighbor " + str(connected_address) + " route-map "+ f"ROUTE-MAP-IN{As2_infos[1]}"+" in","g")          
-            for loopback in As.loopback_plan.values():
-                if loopback != router.loopback:
-                    reg.write(router.name, 1, "  neighbor " + str(loopback)[:-4] + " send-community","f")   
+            # for loopback in As.loopback_plan.values():
+            #     if loopback != router.loopback:
+            #         reg.write(router.name, 1, "  neighbor " + str(loopback)[:-4] + " send-community","f")   
 
 def filter_community(r, list_name, route_map, community_num, reg):
     '''a function that is seperated from as_config_local_pref()'''

@@ -206,14 +206,13 @@ def as_config_local_pref(dict_as, neighbor_info, reg):
                 localpref = {"provider":100, "settlement-free peer":200, "customer":300}
                 reg.write(router.name, 4, " set local-preference " + str(localpref[As2_infos[0]])) # set local-pref for all ABR
                 
-                if As2_infos[0] == "settlement-free peer": # permit customer tag
-                    filter_community(router.name, "LIST-CUSTOMER-OUT", "ROUTE-MAP-OUT", cus_as_id, reg)
-                    reg.write(router.name, 1, "  neighbor " + str(connected_address) + " route-map ROUTE-MAP-OUT OUT","g")
-
                 for interface in router.interfaces.values():
                     if interface.egp_protocol_type == "eBGP":
                         connected_address = find_eBGP_neighbor_info(router.router_id, interface.name, neighbor_info)[3]
-                        reg.write(router.name, 1, "  neighbor " + str(connected_address) + " route-map ROUTE-MAP-IN in","g")           
+                        reg.write(router.name, 1, "  neighbor " + str(connected_address) + " route-map ROUTE-MAP-IN in","g") 
+                        if As2_infos[0] == "settlement-free peer": # permit customer tag
+                            filter_community(router.name, "LIST-CUSTOMER-OUT", "ROUTE-MAP-OUT", cus_as_id, reg)
+                            reg.write(router.name, 1, "  neighbor " + str(connected_address) + " route-map ROUTE-MAP-OUT OUT","g")          
             for loopback in As.loopback_plan.values():
                 if loopback != router.loopback:
                     reg.write(router.name, 1, "  neighbor " + str(loopback)[:-4] + " send-community","f")   

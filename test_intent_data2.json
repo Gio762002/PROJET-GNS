@@ -2,7 +2,7 @@
     "AS": [
         {
             "number": "1",
-            "IP_range": "2001:127:100::/64",
+            "IP_range": "2001:100::/64",
             "loopback_range": "2001:400::",
             "protocol": "RIP",
             "community": "provider",
@@ -120,7 +120,7 @@
         },
         {
             "number": "2",
-            "IP_range": "2001:127:200::/64",
+            "IP_range": "2001:200::/64",
             "loopback_range": "2001:500::",
             "protocol": "OSPF",
             "community": "provider",
@@ -184,7 +184,7 @@
         },
         {
             "number": "3",
-            "IP_range": "2001:127:300::/64",
+            "IP_range": "2001:300::/64",
             "loopback_range": "2001:600::",
             "protocol": "RIP",
             "community": "customer",

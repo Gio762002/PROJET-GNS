@@ -346,9 +346,78 @@ network_intent_data = {
           ]
         }
       ]
+    },{
+            "number": "5",
+            "IP_range": "2001:500::/64",
+            "loopback_range": "2001:900::",
+            "protocol": "OSPF",
+            "community": "provider",
+            "community_number": "105",
+            "routers": [
+                {
+                    "name": "R12",
+                    "type": "ABR",
+                    "bgp_preference": 100,
+                    "interfaces": [
+                        {
+                            "name": "GigabitEthernet0/0",
+                            "neighbor": "",
+                            "neighbor_interface": ""
+                        },
+                        {
+                            "name": "GigabitEthernet1/0",
+                            "neighbor": "R12",
+                            "neighbor_interface": "GigabitEthernet1/0"
+                        },
+                        {
+                            "name": "GigabitEthernet2/0",
+                            "neighbor": "R6",
+                            "neighbor_interface": "GigabitEthernet2/0"
+                        },
+                        {
+                            "name": "GigabitEthernet3/0",
+                            "neighbor": "",
+                            "neighbor_interface": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "R13",
+                    "type": "Internal",
+                    "bgp_preference": 100,
+                    "interfaces": [
+                        {
+                            "name": "GigabitEthernet0/0",
+                            "neighbor": "",
+                            "neighbor_interface": ""
+                        },
+                        {
+                            "name": "GigabitEthernet1/0",
+                            "neighbor": "R12",
+                            "neighbor_interface": "GigabitEthernet1/0"
+                        },
+                        {
+                            "name": "GigabitEthernet2/0",
+                            "neighbor": "R7",
+                            "neighbor_interface": "GigabitEthernet2/0"
+                        },
+                        {
+                            "name": "GigabitEthernet3/0",
+                            "neighbor": "",
+                            "neighbor_interface": ""
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+  "Policies":
+    {"OSPF Metrics":
+     [
+      "R2-R3:4",
+      "R5-R6:6"
+     ]    
     }
-
-  ]
 }
         
                           

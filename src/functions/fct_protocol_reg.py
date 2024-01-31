@@ -102,7 +102,7 @@ def find_As_neighbor(As,dict_as):
         raise Exception("No As neighbor found, the As is isolated")
     return As_neighbor
 
-def as_enable_BGP(dict_as, neighbor_info, reg,  apply_policy=False):
+def as_enable_BGP(dict_as, neighbor_info, reg):
     """
     Implement BGP for all As
     "a","b","c" etc mean the secondary order of writing, this mechanism is particularly designed for BGP, 
@@ -129,9 +129,7 @@ def as_enable_BGP(dict_as, neighbor_info, reg,  apply_policy=False):
                     reg.write(router.name, order, " neighbor " + str(loopback)[:-4] + " remote-as " + str(router.position),"b") 
                     reg.write(router.name, order, " neighbor " + str(loopback)[:-4] + " update-source loopback0","b")
 
-                    reg.write(router.name, order, "  neighbor " + str(loopback)[:-4] + " activate","f") 
-                    # if apply_policy:
-                    #     reg.write(router.name, order, "  neighbor " + str(loopback)[:-4] + " send-community","f")                      
+                    reg.write(router.name, order, "  neighbor " + str(loopback)[:-4] + " activate","f")                  
             
             for interface in router.interfaces.values():
                 if interface.egp_protocol_type == "eBGP":
@@ -140,16 +138,6 @@ def as_enable_BGP(dict_as, neighbor_info, reg,  apply_policy=False):
                     reg.write(router.name, order, "  neighbor " + ABR_int_address + " activate","e")
                 if interface.statu == "up": 
                     reg.write(router.name, order,  "  network " + str(interface.address_ipv6_global) + str('/64'),"h")
-                
-                # if apply_policy and interface.egp_protocol_type == "eBGP":
-                    # reg.write(router.name, order, "  neighbor " + str(interface.address_ipv6_global) + " activate","g")
-                    # reg.write(router.name, order, "  neighbor " + str(interface.address_ipv6_global) + " route-map TAG_COMMUNITY in","g")
-                    # reg.write(router.name, order, "  neighbor " + str(interface.address_ipv6_global) + " route-map FILTER_COMMUNITY out","g")
-
-            # if apply_policy: 
-                # reg.write(router.name, order, "  redistribute connected route-map SET_COMMUNITY","i")
-                # process = 1 if As.igp == "RIP" else 2
-                # reg.write(router.name, order, "  redistribute " + As.igp.lower() + " " + str(process) + " route-map SET_COMMUNITY","i")
             
             reg.write(router.name, order, " exit-address-family","j")
             add_exlam("j")
@@ -191,32 +179,14 @@ def as_config_unused_interface_and_loopback0(dict_as,reg):
 
 
 """
-functions related to rooting policies
+function related to rooting policies
 """
-# def tag_community(r, list_name, route_map, community, community_num, reg): # community_num, community are those of the coming As
-#     reg.write(r, 3, "!")
-#     reg.write(r, 3, "!")
-#     reg.write(r, 3, "ipv6 prefix-list "+ list_name + " seq " + str(10) + " permit ::/0 le 128")
-#     reg.write(r, 3, "!")
-#     reg.write(r, 3, "!")
-#     reg.write(r, 4, "route-map " + route_map + " permit " + str(10))
-#     reg.write(r, 4, " match ipv6 address prefix-list " + list_name)
-        
-    # localpref = {"provider":100, "settlement-free peer":200, "customer":300}
-    # reg.write(r, 4, " set local-preference " + str(localpref[community]))
-    # reg.write(r, 4, " set community " + str(community_num) + " additive")
-
-# def set_community(r, route_map, community_num, reg):
-#     reg.write(r, 4, "!")
-#     reg.write(r, 4, "!")
-#     reg.write(r, 4, "route-map " + route_map + " permit " + str(10))
-#     reg.write(r, 4, "set community " + str(community_num) + " additive")
-#     reg.write(r, 4, "!")
-
-
-
 def as_config_local_pref(dict_as, neighbor_info, reg):
-    """set the local-pref attribute of BGP paths so As to prefer customers over settlement-free peers over providers"""
+    """
+    Set the local-pref attribute of BGP paths so As to prefer customers over settlement-free peers over providers.
+    Tag routes coming from another customer As, and at all routers ABR in itself, only permit the out of routes having this tag if this ABR is connected to peer.
+    
+    """
     for As in dict_as.values():
         connected_As_info = find_As_neighbor(As, dict_as) 
         for router in As.routers.values():
@@ -236,7 +206,7 @@ def as_config_local_pref(dict_as, neighbor_info, reg):
                 localpref = {"provider":100, "settlement-free peer":200, "customer":300}
                 reg.write(router.name, 4, " set local-preference " + str(localpref[As2_infos[0]])) # set local-pref for all ABR
                 
-                if As2_infos[0] == "settlement-free peer":
+                if As2_infos[0] == "settlement-free peer": # permit customer tag
                     filter_community(router.name, "LIST-CUSTOMER-OUT", "ROUTE-MAP-OUT", cus_as_id, reg)
                     reg.write(router.name, 1, "  neighbor " + str(connected_address) + " route-map ROUTE-MAP-OUT OUT","g")
 
@@ -247,13 +217,6 @@ def as_config_local_pref(dict_as, neighbor_info, reg):
             for loopback in As.loopback_plan.values():
                 if loopback != router.loopback:
                     reg.write(router.name, 1, "  neighbor " + str(loopback)[:-4] + " send-community","f")   
-
-        # for r,(commu,_) in connected_As_info.items():
-        #     if commu == "settlement-free peer":
-        #         for router in As.routers.values():
-        #             if router.router_id == r:
-        #                 r_name = router.name
-        #         filter_community(r_name, "CUSTOMER-OUT", commu_num, reg) 
 
 def filter_community(r, list_name, route_map, community_num, reg):
     reg.write(r, 1, "ip community-list standard " + list_name + " permit " + str(community_num),"k")

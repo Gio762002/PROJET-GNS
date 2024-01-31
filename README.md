@@ -25,7 +25,7 @@ There's several python files that achieve the conversion form an intent file to 
 
 **generate outputs**:    
 - ```class_output.py``` : defines the ```registrar``` class, that registrer Cisco commands from the right loop, and group the commands by router and interface.   
-- ```fct_protocol_reg``` :  pass ```reg``` as a parameter, which is a ```registrar``` instance, created in the main program.  
+- ```fct_protocol_reg.py``` :  pass ```reg``` as a parameter, which is a ```registrar``` instance, created in the main program.  
 
 **principal programme** :   
 - ```main.py``` : use all instances(defined by classes), clear out the order of call of the functions.    

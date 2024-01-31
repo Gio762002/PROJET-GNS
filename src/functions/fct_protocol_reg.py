@@ -87,7 +87,7 @@ def find_eBGP_neighbor_info(r,int,neighbor_info): #int(str) = interface.name
     return('not found')
 
 def find_As_neighbor(As,dict_as):
-    """find all the As neighbors of an As from its link_dict. RETURN: {r : (As.community, As.community_number)}"""
+    """find all the As neighbors of an As from its link_dict. RETURN: {r.id : (As.community, As.community_number)}"""
     As_neighbor = {}
     for (r1,_),(r2,_) in As.link_dict.items(): # find router r2, that is not in the As but connected to it
         if r2 not in As.routers.keys():
@@ -130,8 +130,8 @@ def as_enable_BGP(dict_as, neighbor_info, reg,  apply_policy=False):
                     reg.write(router.name, order, " neighbor " + str(loopback)[:-4] + " update-source loopback0","b")
 
                     reg.write(router.name, order, "  neighbor " + str(loopback)[:-4] + " activate","f") 
-                    if apply_policy:
-                        reg.write(router.name, order, "  neighbor " + str(loopback)[:-4] + " send-community","f")                      
+                    # if apply_policy:
+                    #     reg.write(router.name, order, "  neighbor " + str(loopback)[:-4] + " send-community","f")                      
             
             for interface in router.interfaces.values():
                 if interface.egp_protocol_type == "eBGP":
@@ -185,9 +185,9 @@ def as_config_unused_interface_and_loopback0(dict_as,reg):
             
             for interface in router.interfaces.values():
                 if interface.statu == "down":
-                    reg.write(router.name, interface.name, " no ipv6 address")
-                    reg.write(router.name, interface.name, " shutdown")
-                    reg.write(router.name, interface.name, " negotiation auto")
+                    reg.write(router.name, interface.name, "no ipv6 address")
+                    reg.write(router.name, interface.name, "shutdown")
+                    reg.write(router.name, interface.name, "negotiation auto")
 
 
 """
@@ -202,39 +202,78 @@ def tag_community(r, list_name, route_map, community, community_num, reg): # com
     reg.write(r, 4, "route-map " + route_map + " permit " + str(10))
     reg.write(r, 4, " match ipv6 address prefix-list " + list_name)
         
-    localpref = {"provider":100, "settlement-free peer":200, "customer":300}
-    reg.write(r, 4, " set local-preference " + str(localpref[community]))
-    reg.write(r, 4, " set community " + str(community_num) + " additive")
+    # localpref = {"provider":100, "settlement-free peer":200, "customer":300}
+    # reg.write(r, 4, " set local-preference " + str(localpref[community]))
+    # reg.write(r, 4, " set community " + str(community_num) + " additive")
 
-def set_community(r, route_map, community_num, reg):
-    reg.write(r, 4, "!")
-    reg.write(r, 4, "!")
-    reg.write(r, 4, "route-map " + route_map + " permit " + str(10))
-    reg.write(r, 4, "set community " + str(community_num) + " additive")
-    reg.write(r, 4, "!")
+# def set_community(r, route_map, community_num, reg):
+#     reg.write(r, 4, "!")
+#     reg.write(r, 4, "!")
+#     reg.write(r, 4, "route-map " + route_map + " permit " + str(10))
+#     reg.write(r, 4, "set community " + str(community_num) + " additive")
+#     reg.write(r, 4, "!")
 
-def filter_community(r, list_name, community_num, reg):
-    reg.write(r, 1, "ip community-list standard " + list_name + " permit " + str(community_num),"k")
-    reg.write(r, 4, "!")
-    reg.write(r, 4, "!")
-    reg.write(r, 4, "route-map " + list_name + " permit " + str(10))
-    reg.write(r, 4, " match community " + list_name)
-    reg.write(r, 4, "!")
-    reg.write(r, 4, "route-map " + list_name + " deny " + str(20))
+# def filter_community(r, list_name, community_num, reg):
+#     reg.write(r, 1, "ip community-list standard " + list_name + " permit " + str(community_num),"k")
+#     reg.write(r, 4, "!")
+#     reg.write(r, 4, "!")
+#     reg.write(r, 4, "route-map " + list_name + " permit " + str(10))
+#     reg.write(r, 4, " match community " + list_name)
+#     reg.write(r, 4, "!")
+#     reg.write(r, 4, "route-map " + list_name + " deny " + str(20))
 
 
 def as_config_local_pref(dict_as, neighbor_info, reg):
     """set the local-pref attribute of BGP paths so As to prefer customers over settlement-free peers over providers"""
     for As in dict_as.values():
-        connected_As_info = find_As_neighbor(As,dict_as) 
+        connected_As_info = find_As_neighbor(As, dict_as) 
         for router in As.routers.values():
-            if router.router_id in connected_As_info.keys():
+            if router.router_id in connected_As_info.keys(): # this router is an ABR
                 As2_infos = connected_As_info[router.router_id] #{r : (As.community, As.community_number)}
-                tag_community(router.name, "TAG_COMMUNITY", "RM_COMMUNITY", As2_infos[0], As2_infos[1], reg) #connected_As.community_number, connected_As.community
+                # tag_community(router.name, "TAG_COMMUNITY", "RM_COMMUNITY", As2_infos[0], As2_infos[1], reg) #connected_As.community_number, connected_As.community
+                reg.write(router.name, 4, "route-map ROUTEMAP permit " + str(10))
+                if As2_infos[0] == "customer":
+                    reg.write(router.name, 4, " match ipv6 address prefix-list LIST-CUSTOMER")
+                    reg.write(router.name, 3, "ipv6 prefix-list LIST-CUSTOMER seq " + str(10) + " permit ::/0 le 128")
+                    reg.write(router.name, 4, " set community " + str(As2_infos[1]) + " additive")
+                reg.write(router.name, 3, "!")
+                reg.write(router.name, 3, "!")
+                localpref = {"provider":100, "settlement-free peer":200, "customer":300}
+                reg.write(router.name, 4, " set local-preference " + str(localpref[As2_infos[0]]))
+                
+
                 for interface in router.interfaces.values():
                     if interface.egp_protocol_type == "eBGP":
                         connected_address = find_eBGP_neighbor_info(router.router_id, interface.name, neighbor_info)[3]
-                        reg.write(router.name, 1, "  neighbor " + str(connected_address) + " route-map RM_COMMUNITY in","g")
+                        reg.write(router.name, 1, "  neighbor " + str(connected_address) + " route-map ROUTEMAP in","g")
             for loopback in As.loopback_plan.values():
                 if loopback != router.loopback:
                     reg.write(router.name, 1, "  neighbor " + str(loopback)[:-4] + " send-community","f")   
+
+
+        # if 连接的as == customer
+            # 进： tag 这个r 上的路由
+        # 其他abr ：
+            #如果连接的是 peer
+                # 出： permit 这个tag ， deny所有其他的
+            # 如果是provider
+                # pass
+# def as_config_propagate_cus(dict_as, neighbor_info, reg):
+#         for As in dict_as.values():
+#             connected_As_info = find_As_neighbor(As, dict_as) # {r.id : (As.community, As.community_number)}
+#             for router in As.routers.values():
+#                 if router.router_id in connected_As_info.keys(): # this router is an ABR
+#                     if connected_As_info[router.router_id][0] == "customer":  # this router connects to a customer As
+#                         for interface in router.interfaces.values():
+#                             if interface.egp_protocol_type == "eBGP":
+#                                 (as_id, _, _, address_int) = find_eBGP_neighbor_info(router.router_id, interface.name, neighbor_info)
+#                                 print(as_id, _, _, address_int)
+#                                 if dict_as.get(f"as{as_id}").community == "customer":
+#                                     reg.write(router.name, 1, "  neighbor " + str(address_int) + " route-map TAG-CUSTOMER in","g")
+
+#             for r,(commu,_) in connected_As_info.items():
+#                 if commu == "settlement-free peer":
+#                     for router in As.routers.values():
+#                         if router.router_id == r:
+#                             r_name = router.name
+#                     filter_community(r_name, "CUSTOMER-IN", "TAG-CUSTOMER", reg)

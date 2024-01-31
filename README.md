@@ -16,15 +16,17 @@ There's several python files that achieve the conversion form an intent file to 
 
 **overall topologie** :  
 ```class_reseau.py``` : defines classes for router/interface/as.  
-```fct_reseau.py``` : defines all the fct that are usefull to build the topologie ex: add one router to an as.  
+```fct_reseau.py``` : defines all the fct that are useful to build the topologie ex: add one router to an as.  
 ```fct_protocol_reg.py``` : defines all the fct that relate to implementations of protocols with ```reg``` as a parameter that tracks Cisco commands related.     
 
 **generate outputs**:    
 ```class_output.py``` : defines the ```registrar``` class, that registrer Cisco commands from the right loop, and group the commands by router and interface.   
-```fct_protocol_reg``` :  pass ```reg``` as a parameter, which is a ```registrar``` object, created in the main program.  
+```fct_protocol_reg``` :  pass ```reg``` as a parameter, which is a ```registrar``` instance, created in the main program.  
 
-**principal programme** : ```main.py``` : use all objects(defined by classes), clear out the order of commands.    
+**principal programme** : ```main.py``` : use all instances(defined by classes), clear out the order of call of the functions.    
 
 #### other python files that help with testing:  
 ```fct_show.py```: modular visualization functions.  
 ```test.py```: sample of testing all the functions, can be considered as a simulation. 
+
+##HOW TO RUN IT : Simply run main.py :)

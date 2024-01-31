@@ -8,10 +8,12 @@ from functions import fct_reseau as fctr
 from functions import fct_protocol_reg as fctp
 from functions import fct_show as sh
 
-reg = output.registrar() #creation of an registrar instence
+input_path = "network_intent_data.json"
+output_path = "output/" # use always a folder that already exists
+reg = output.registrar(output_path) #creation of an registrar instence
 
 #load the intent file
-file = "network_intent_data.json"
+file = input_path
 with open(file,"r") as f:
     network_intent = json.load(f)
 

@@ -1,10 +1,12 @@
 import os
-class registrar(): #designed for routers and their interfaces
-
-    def __init__(self):
+class registrar(): 
+    '''
+    designed for routers and their interfaces, generate output files
+    '''
+    def __init__(self,path="output/"):
         self.general_register = {}
         self.log = {}
-
+        self.path = path
     def create_register(self, name):
         self.general_register[name] = {0:[],
                                        1:{"a":[],"b":[],"c":[],"c":[],"d":[],"e":[],"f":[],"g":[],"h":[],"i":[],"j":[],"k":[],"l":[]},
@@ -38,28 +40,15 @@ class registrar(): #designed for routers and their interfaces
                 print("Invalid name or entry")
         except Exception as e:
             print("Error:", str(e))
-    
-    def display(self, root, indent=0): 
-        for key, value in root.items(): 
-            print('\t' * indent + '--' + str(key))
-            if isinstance(value, dict):
-                self.display(value, indent+1)
-            elif isinstance(value, list):
-                for i in value:
-                    print('\t' * (indent+1) + '--' + str(i))
-            else:
-                print('\t' * (indent+1) + '--' + str(value))
 
     def save_as_cfg(self):
         files = {}
         for target in self.general_register.keys():
-            files[target] = "output/i" + target[1:] + "_startup-config.cfg"
+            files[target] = self.path + "i" + target[1:] + "_startup-config.cfg"
         
-            
-        folder_path = "output/"
-        for file_name in os.listdir(folder_path):
+        for file_name in os.listdir(self.path):
             if file_name.endswith(".cfg"):
-                file_path = os.path.join(folder_path, file_name)
+                file_path = os.path.join(self.path, file_name)
                 os.remove(file_path)
                 
         for (target, file) in files.items():         
@@ -141,4 +130,14 @@ class registrar(): #designed for routers and their interfaces
             for command in default_commands_end:
                 f.write(command+"\n")
 
+    def display(self, root, indent=0): 
+        for key, value in root.items(): 
+            print('\t' * indent + '--' + str(key))
+            if isinstance(value, dict):
+                self.display(value, indent+1)
+            elif isinstance(value, list):
+                for i in value:
+                    print('\t' * (indent+1) + '--' + str(i))
+            else:
+                print('\t' * (indent+1) + '--' + str(value))
 

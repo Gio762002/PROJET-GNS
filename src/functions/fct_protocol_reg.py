@@ -161,13 +161,6 @@ def as_enable_BGP(dict_as, neighbor_info, reg,  apply_policy=False):
             reg.write(router.name, order, "logging alarm informational","l")
             reg.write(router.name, order, "no cdp log mismatch duplex","l")
 
-            # if As.igp == "OSPF":
-            #     reg.write(router.name, order, "ipv6 router ospf 2","l")
-            #     reg.write(router.name, order, " router-id " + router.router_id,"l")
-            #     reg.write(router.name, order, " log-adjacency-changes","l")
-            # elif As.igp == "RIP":
-            #     reg.write(router.name, order, "ipv6 router rip 1","l")
-            #     reg.write(router.name, order, " redistribute connected","l")
 
 '''
 functions particularly related to complete the configuration

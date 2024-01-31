@@ -84,5 +84,4 @@ fctp.as_config_local_pref(as_dict, neighbor_info, reg)
 
 """output the configuration files"""
 reg.save_as_cfg()
-print(as_dict["as1"].routers)
-print(as_dict["as1"].link_dict)
+reg.display(reg.general_register)

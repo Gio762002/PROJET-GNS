@@ -45,6 +45,7 @@ for json_as in network_intent['AS']: # json_as is a dict
         for json_interface in json_router['interfaces']: # json_interface is a dict
             interface_name = f"{router_name}{json_interface['name']}" #something like 'R1GigabitEthernet1/0'
             interface_instance = classr.interface(json_interface['name'])
+            interface_instance.serve = as_instance.community
             fctr.init_interface(router_instance,interface_instance) # bind to router
             
             if json_interface['neighbor'] != '':

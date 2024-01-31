@@ -32,7 +32,8 @@ class interface:
         self.connected_router = None # router_id
         self.connected_interface = None # interface.name
         self.igp_protocol_type = igp_protocol_type
-        self.egp_protocol_type = None   
+        self.egp_protocol_type = None
+        self.serve = None # ==community of As where its router is placed, makes the life easier.   
         self.protocol_process = None 
 
 

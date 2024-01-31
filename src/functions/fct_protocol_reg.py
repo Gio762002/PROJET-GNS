@@ -53,7 +53,7 @@ def as_enable_ospf(As,reg):
 def generate_eBGP_neighbor_info(dict_as):
     '''
     For all ABR in all as, mark their ebgp interface and find the info of its connected int.
-    RETURN: {(as,router,ABR_interface,@int):(as,router,ABR_interface,@int)}
+    RETURN: {(as,router,ABR_interface,@int):(as,router_id,ABR_interface,@int,community)}
     可能要得到连接路由器as的role
     '''   
     neighbor_info = {}
@@ -71,15 +71,17 @@ def generate_eBGP_neighbor_info(dict_as):
                     
                     ABR_int_address1 = dict_routers[r1].interfaces.get(int1).address_ipv6_global
                     ABR_int_address2 = dict_routers[r2].interfaces.get(int2).address_ipv6_global
+                    serve1 = dict_routers[r1].interfaces.get(int1).serve
+                    serve2 = dict_routers[r2].interfaces.get(int2).serve
                     
-                    neighbor_info[(dict_routers[r1].position,r1,int1,ABR_int_address1)] = (dict_routers[r2].position,r2,int2,ABR_int_address2)
-                    neighbor_info[(dict_routers[r2].position,r2,int2,ABR_int_address2)] = (dict_routers[r1].position,r1,int1,ABR_int_address1)
+                    neighbor_info[(dict_routers[r1].position, r1, int1, ABR_int_address1, serve1)] = (dict_routers[r2].position, r2, int2, ABR_int_address2, serve2)
+                    neighbor_info[(dict_routers[r2].position, r2, int2, ABR_int_address2, serve2)] = (dict_routers[r1].position, r1, int1, ABR_int_address1, serve1)
     return neighbor_info
 
    
 def find_eBGP_neighbor_info(r,int,neighbor_info): #int(str) = interface.name
     '''
-    For one particular ABR, find the info of its ebgp interface. RETURN: (As,router,ABR_interface,@int)
+    For one particular ABR, find the info of its ebgp interface. RETURN: (As,router,ABR_interface,@int,community)
     '''  
     for key,value in neighbor_info.items():
         if key[1] == r and key[2]==int:
@@ -137,7 +139,7 @@ def as_enable_BGP(dict_as, neighbor_info, reg):
             
             for interface in router.interfaces.values():
                 if interface.egp_protocol_type == "eBGP":
-                    (rm_as,_,_,ABR_int_address) = find_eBGP_neighbor_info(router.router_id,interface.name,neighbor_info) 
+                    (rm_as,_,_,ABR_int_address,_) = find_eBGP_neighbor_info(router.router_id,interface.name,neighbor_info) 
                     reg.write(router.name, order, " neighbor " + ABR_int_address + " remote-as " + str(rm_as),"c")
                     reg.write(router.name, order, "  neighbor " + ABR_int_address + " activate","e")
                 if interface.statu == "up": 
@@ -193,12 +195,12 @@ def as_config_local_pref(dict_as, neighbor_info, reg):
     """
     for As in dict_as.values():
         connected_As_info = find_As_neighbor(As, dict_as) #{r:[]}
-        print(As.as_id,"---",connected_As_info)
+        # print(As.as_id,"---",connected_As_info)
         for router in As.routers.values():
             if router.router_id in connected_As_info.keys(): # this router is an ABR
                 As2_infos_list = connected_As_info[router.router_id] #{r : [(As.community, As.community_number)]}
                 
-                for As2_infos in As2_infos_list:
+                for As2_infos in As2_infos_list:#(As.community, As.community_number)
                     reg.write(router.name, 4, "route-map "+f"ROUTE-MAP-IN{As2_infos[1]}"+" permit " + str(10),"in")
                     if As2_infos[0] == "customer": # tag community only for ABR connected to customer
                         cus_as_id = As2_infos[1]
@@ -207,7 +209,12 @@ def as_config_local_pref(dict_as, neighbor_info, reg):
                         reg.write(router.name, 4, " set community " + str(cus_as_id) + " additive","in")
                     if As2_infos[0] == "settlement-free peer": # permit customer tag
                         filter_community(router.name, "LIST-CUSTOMER-OUT", "ROUTE-MAP-OUT", cus_as_id, reg)
-                        reg.write(router.name, 1, "  neighbor " + str(connected_address) + " route-map ROUTE-MAP-OUT OUT","g")   
+                        for interface in router.interfaces.values():
+                            if interface.egp_protocol_type == "eBGP":
+                                con_add = find_eBGP_neighbor_info(router.router_id, interface.name, neighbor_info)[3]
+                                con_serve = find_eBGP_neighbor_info(router.router_id, interface.name, neighbor_info)[4]
+                                if con_serve == "settlement-free peer":
+                                    reg.write(router.name, 1, "  neighbor " + str(con_add) + " route-map ROUTE-MAP-OUT OUT","g")   
                     reg.write(router.name, 3, "!")
                     reg.write(router.name, 3, "!")
 
@@ -222,16 +229,13 @@ def as_config_local_pref(dict_as, neighbor_info, reg):
                                     connected_as_cn = As.community_number # bind int with connected_as_cn
                             connected_address = find_eBGP_neighbor_info(router.router_id, interface.name, neighbor_info)[3]
                             if connected_as_cn == As2_infos[1]:
-                                reg.write(router.name, 1, "  neighbor " + str(connected_address) + " route-map "+ f"ROUTE-MAP-IN{As2_infos[1]}"+" in","g") 
-                        # if As2_infos[0] == "settlement-free peer": # permit customer tag
-                        #     filter_community(router.name, "LIST-CUSTOMER-OUT", "ROUTE-MAP-OUT", cus_as_id, reg)
-                        #     reg.write(router.name, 1, "  neighbor " + str(connected_address) + " route-map ROUTE-MAP-OUT OUT","g")          
+                                reg.write(router.name, 1, "  neighbor " + str(connected_address) + " route-map "+ f"ROUTE-MAP-IN{As2_infos[1]}"+" in","g")          
             for loopback in As.loopback_plan.values():
                 if loopback != router.loopback:
                     reg.write(router.name, 1, "  neighbor " + str(loopback)[:-4] + " send-community","f")   
 
 def filter_community(r, list_name, route_map, community_num, reg):
-    print("called")
+    '''a function that is seperated from as_config_local_pref()'''
     reg.write(r, 1, "ip community-list standard " + list_name + " permit " + str(community_num),"k")
     reg.write(r, 4, "!","out")
     reg.write(r, 4, "!","out")

@@ -169,7 +169,7 @@ def as_config_interfaces(dict_as,reg):
                     reg.write(router.name,interface.name,"negotiation auto")
                     reg.write(router.name,interface.name,"ipv6 address "+str(interface.address_ipv6_global)+str('/64'))
 
-def as_config_unused_interface_and_loopback0(dict_as,reg):
+def as_config_unused_interface_and_loopback0(dict_as,reg): #dont call this function if you want to use telnet
     """default config of unused interfaces and loopback0 of all routers in all As"""
     for As in dict_as.values():
         for router in As.routers.values():

@@ -9,7 +9,7 @@ from functions import fct_protocol_reg as fctp
 from functions import fct_show as sh
 
 input_path = "src/network_intent_data.json"
-output_path = "./output" # use always a folder that already exists
+output_path = "./output/" # use always a folder that already exists
 reg = output.registrar(output_path) #creation of an registrar instence
 
 #load the intent file
@@ -64,7 +64,11 @@ fctr.as_local_links(as_dict)
 fctr.as_auto_addressing_for_link(as_dict) # from now on, everything is placed so can be tracked by attributes, what is left is to implement the protocols.
 
 fctp.as_config_interfaces(as_dict, reg)
-fctp.as_config_unused_interface_and_loopback0(as_dict, reg)
+
+'''
+dont uncomment the function below if you want to use telnet
+'''
+# fctp.as_config_unused_interface_and_loopback0(as_dict, reg)
 
 """implement the protocols"""
 neighbor_info = fctp.generate_eBGP_neighbor_info(as_dict)

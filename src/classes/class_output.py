@@ -110,19 +110,19 @@ class registrar():
             "!","!","!","!","!","!","!",
             "control-plane",
             "!","!","!","!","!","!","!",
-            "gatekeeper",
-            " shutdown",
-            "!","!",
-            "line con 0",
-            " exec-timeout 0 0",
-            " privilege level 15",
-            " logging synchronous",
-            " stopbits 1",
-            "line vty 0 4",
-            " login",
-            "!","!",
-            "end"
-        ]
+            # "gatekeeper",
+            # " shutdown",
+            # "!","!",
+            # "line con 0",
+            # " exec-timeout 0 0",
+            # " privilege level 15",
+            # " logging synchronous",
+            # " stopbits 1",
+            # "line vty 0 4",
+            # " login",
+            # "!","!",
+            # "end"
+        ] # commented to ensure telnet.py works
         if where == "beginning":
             for command in default_commands_beginning:
                 f.write(command+"\n")

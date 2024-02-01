@@ -26,6 +26,10 @@ try:
     time.sleep(1)
     output = tn.read_very_eager().decode('ascii')
     print(output)
+    tn.write(b"conf t\n")
+    time.sleep(1)
+    output = tn.read_very_eager().decode('ascii')
+    print(output)
     # Get config from a file
     with open('config.txt', 'r', encoding='utf-8') as file:
         for line in file:

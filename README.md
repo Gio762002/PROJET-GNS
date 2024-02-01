@@ -28,7 +28,8 @@ There's several python files that achieve the conversion form an intent file to 
 - ```fct_protocol_reg.py``` :  pass ```reg``` as a parameter, which is a ```registrar``` instance, created in the main program.  
 
 **principal programme** :   
-- ```main.py``` : use all instances(defined by classes), clear out the order of call of the functions.    
+- ```main.py``` : use all instances(defined by classes), clear out the order of call of the functions.
+- ```telnet.py``` : once the cfg files are generated, it can configure remotely via telnet.      
 
 #### other python files that help with testing:  
 - ```fct_show.py```: modular visualization functions.   

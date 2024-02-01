@@ -8,7 +8,7 @@ from functions import fct_reseau as fctr
 from functions import fct_protocol_reg as fctp
 from functions import fct_show as sh
 
-input_path = "src/network_intent_data.json"
+input_path = "network_intent_data.json"
 output_path = "./output/" # use always a folder that already exists
 reg = output.registrar(output_path) #creation of an registrar instence
 
@@ -93,4 +93,4 @@ fctp.as_config_local_pref(as_dict, neighbor_info, reg)
 
 """output the configuration files"""
 reg.save_as_cfg()
-# reg.display(reg.general_register)
+reg.display(reg.general_register)

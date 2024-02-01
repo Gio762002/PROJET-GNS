@@ -44,7 +44,7 @@ class registrar():
     def save_as_cfg(self):
         files = {}
         for target in self.general_register.keys():
-            files[target] = self.path + "i" + target[1:] + "_startup-config.cfg"
+            files[target] = self.path +"i" + target[1:] + "_startup-config.cfg"
         
         for file_name in os.listdir(self.path):
             if file_name.endswith(".cfg"):

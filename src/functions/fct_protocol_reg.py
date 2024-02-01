@@ -16,7 +16,7 @@ def as_enable_rip(As,reg):
         for interface in router.interfaces.values():
             if interface.igp_protocol_type == "OSPF":
                 raise Exception("RIP and OSPF cannot be enabled at the same time")
-            if interface.statu == "up" and interface.igp_protocol_type == None:
+            if interface.statu == "up" and interface.egp_protocol_type != "eBGP":
                 interface.igp_protocol_type = "RIP"
                 interface.protocol_process = process_id      
                 reg.write(router.name, interface.name, "ipv6 enable")
@@ -53,8 +53,7 @@ def as_enable_ospf(As,reg):
 def generate_eBGP_neighbor_info(dict_as):
     '''
     For all ABR in all as, mark their ebgp interface and find the info of its connected int.
-    RETURN: {(as,router,ABR_interface,@int):(as,router_id,ABR_interface,@int,community)}
-    可能要得到连接路由器as的role
+    RETURN: {(as,router,ABR_interface,@int,community):(as,router_id,ABR_interface,@int,community)}
     '''   
     neighbor_info = {}
     #this part generates a dict of all router objects, which to be used to get easily the router object by its id

@@ -31,8 +31,7 @@ There's several python files that achieve the conversion form an intent file to 
 - ```main.py``` : use all instances(defined by classes), clear out the order of call of the functions.    
 
 #### other python files that help with testing:  
-- ```fct_show.py```: modular visualization functions.  
-- ```test.py```: sample of testing all the functions, can be considered as a simulation. 
+- ```fct_show.py```: modular visualization functions.   
 
 ### HOW TO RUN IT : Simply run ```main.py``` :)  
 ##### what you can play in the ```main.py``` :   
